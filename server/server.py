@@ -60,7 +60,7 @@ class Server(object):
             punter = self.punters[i % self.n]
             punter.open_proc()
             self.hand_shake(punter)
-            msg = {"move": {"moves": self.moves}, "state": punter.state}
+            msg = {"move": {"moves": self.moves[-self.n:]}, "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
             # self.log("game play reply from punter %d in %d turn" % (punter.id, i))
@@ -68,7 +68,8 @@ class Server(object):
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
             del reply["state"]
-            self.moves.append(reply) # TODO: trim moves
+            print(reply)
+            self.moves.append(reply)
 
         self.phase = "SCORING"
         scores = []
