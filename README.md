@@ -25,3 +25,16 @@ Online modeとoffline modeがある(Section 4)
 どちらの場合もJSONでやりとりする
 1手10秒
 
+# `./run-lamduct`の使い方
+## インストール
+lamductをインストールする必要がある。
+```
+opam pin add lambda-duct https://github.com/icfpcontest2017/lambda-duct.git
+```
+でインストールできる。
+([https://icfpcontest2017.github.io/post/lambdaduct/](https://icfpcontest2017.github.io/post/lambdaduct/)を参照。)
+## 実行
+`./run-lamduct.sh (ポート番号)`で、`http://punter.inf.ed.ac.uk/`の(ポート番号)へconnectする。
+エラーログは`punt.log`へ出力される。
+
+
