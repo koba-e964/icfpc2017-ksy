@@ -1,9 +1,92 @@
+from map import Map
+from punter import Punter
+
+import json
 import sys
 from subprocess import Popen, PIPE
+import time
 
-if len(sys.argv) < 3:
-    print("error")
-    sys.exit(1)
+class Server(object):
+    def __init__(self, mapfile, scripts):
+        self.punters = self.init_punters(scripts)
+        self.phase = ""
+        self.moves = []
 
-n = sys.argv[1]
-players = sys.argv[2:]
+        f = open(mapfile)
+        self.map = json.load(f)
+        f.close()
+
+    def init_punters(self, scripts):
+        punters = []
+        for i in len(scripts):
+            punters.append(Punter(i, scripts[i]))
+        return punters
+
+    def open_procs(self):
+        for punter in self.punters:
+            punter.open_proc()
+
+    def run(self):
+        self.phase = "SETUP"
+        self.open_procs()
+        for punter in self.punters:
+            self.hand_shake(punter)
+            msg = {"punter": punter.id, "punters": len(self.punters), map: self.map}
+            packet = self.make_packet(msg)
+            out, err = punter.proc.communicate(packet)
+            reply = json.load(out.split(":", 1))
+            punter.state = reply["state"]
+
+        self.phase = "GAMEPLAY"
+        for i in len(self.map["rivers"]):
+            self.open_procs()
+            for punter in self.punters:
+                self.hand_shake(punter)
+                msg = {"move": {"moves": self.moves}, "state": punter.state}
+                packet = self.make_packet(msg)
+                out, err = punter.proc.communicate(packet)
+                reply = json.load(out.split(":", 1))
+                self.moves.append(reply["moves"]) # TODO: trim moves
+                punter.state = reply["state"]
+
+        self.phase = "SCORING"
+        scores = [0] * len(self.punters) #TODO: calc socres
+        for punter in self.punters:
+            self.hand_shake(punter)
+            score = 0
+            msg = {"stop": {"moves": self.moves, "scores": scores}, "state": punter.state}
+            packet = self.make_packet(msg)
+            out, err = punter.proc.communicate(packet)
+
+    def hand_shake(self, punter):
+        reply = self.rcv_json(punter.proc)
+        msg = {"you": reply["me"]}
+        packet = self.make_packet(msg)
+        punter.proc.stdin.write(packet)
+
+    def rcv_json(self, proc):
+        s = ""
+        while True:
+            c = proc.stdout.read(1)
+            if c == ":": break
+            s += c
+
+        l = int(s)
+        json_str = proc.read(l)
+        return json.load(json_str)
+
+    def make_packet(self, msg):
+        s = self.dumps(msg)
+        l = len(s)
+        return str(l) + ":" + s
+
+    def dump(self, msg):
+        return json.dumps(msg, separators=(',', ':'))
+
+mapfile = int(sys.argv[1])
+names = sys.argv[2:]
+
+server = Server(mapfile, names)
+
+
+print(proc.stdout.read())
