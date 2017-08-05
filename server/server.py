@@ -34,12 +34,13 @@ class Server(object):
         return mp
 
     def init_graph(self):
-        graph = {site["id"]:[] for site in self.map["sites"]}
+        graph = {site["id"]:{} for site in self.map["sites"]}
         for river in self.map["rivers"]:
             s = river["source"]
             t = river["target"]
-            graph[s].append({"to": t, "punter": None})
-            graph[t].append({"to": s, "punter": None})
+            graph[s][t] = None
+            graph[t][s] = None
+        self.log(graph)
         return graph
 
     def run(self):
@@ -69,6 +70,8 @@ class Server(object):
             punter.state = reply["state"]
             del reply["state"]
             print(reply)
+            if "claim" in reply:
+                self.update_graph(reply["claim"], punter)
             self.moves.append(reply)
 
         self.phase = "SCORING"
@@ -84,6 +87,12 @@ class Server(object):
             out, err = punter.proc.communicate(packet)
 
         print(scores)
+
+    def update_graph(self, claim, punter):
+        s = claim["source"]
+        t = claim["target"]
+        self.graph[s][t] = punter.id
+        self.graph[t][s] = punter.id
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
