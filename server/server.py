@@ -2,9 +2,9 @@ from punter import Punter
 
 import json
 import sys
-from subprocess import Popen, PIPE
 import time
 from queue import Queue
+
 
 class Server(object):
     def __init__(self, mapfile, scripts):
@@ -36,7 +36,7 @@ class Server(object):
         return mp
 
     def init_graph(self):
-        graph = {site["id"]:{} for site in self.map["sites"]}
+        graph = {site["id"]: {} for site in self.map["sites"]}
         for river in self.map["rivers"]:
             s = river["source"]
             t = river["target"]
@@ -47,7 +47,7 @@ class Server(object):
     def init_dists(self):
         dists = {}
         for mine in self.map["mines"]:
-            dists[mine] = {site["id"]:-1 for site in self.map["sites"]}
+            dists[mine] = {site["id"]: -1 for site in self.map["sites"]}
             dists[mine][mine] = 0
             q = Queue()
             q.put(mine)
@@ -82,7 +82,8 @@ class Server(object):
             punter = self.punters[i % self.n]
             punter.open_proc()
             self.hand_shake(punter)
-            msg = {"move": {"moves": self.moves[-self.n:]}, "state": punter.state}
+            msg = {"move": {"moves": self.moves[-self.n:]},
+                   "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
             # self.log("game play reply from punter %d in %d turn" % (punter.id, i))
@@ -103,13 +104,14 @@ class Server(object):
         for punter in self.punters:
             punter.open_proc()
             self.hand_shake(punter)
-            msg = {"stop": {"moves": self.moves, "scores": scores}, "state": punter.state}
+            msg = {"stop": {"moves": self.moves, "scores": scores},
+                   "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
 
         print(scores)
 
-    def update_graph(self, claim, punter): #TODO: error handling
+    def update_graph(self, claim, punter):  # TODO: error handling
         s = claim["source"]
         t = claim["target"]
         self.graph[s][t] = punter.id
@@ -119,7 +121,7 @@ class Server(object):
         id = punter.id
         score = 0
         for mine in self.map["mines"]:
-            reachable = {site["id"]:False for site in self.map["sites"]}
+            reachable = {site["id"]: False for site in self.map["sites"]}
             reachable[mine] = True
             q = Queue()
             q.put(mine)
@@ -144,20 +146,24 @@ class Server(object):
         s = ""
         while True:
             c = proc.stdout.read(1)
-            if c == ":": break
+            if c == ":":
+                break
             s += c
 
         l = int(s)
         json_str = proc.stdout.read(l)
         return json.loads(json_str)
 
-    def make_packet(self, msg):
+    @staticmethod
+    def make_packet(msg):
         s = json.dumps(msg, separators=(',', ':'))
         l = len(s)
         return str(l) + ":" + s
 
-    def log(self, msg):
-        print(msg, file = sys.stderr)
+    @staticmethod
+    def log(msg):
+        print(msg, file=sys.stderr)
+
 
 mapfile = sys.argv[1]
 names = sys.argv[2:]
