@@ -10,10 +10,7 @@ class Server(object):
         self.punters = self.init_punters(scripts)
         self.phase = ""
         self.moves = self.init_moves()
-
-        f = open(mapfile)
-        self.map = json.load(f)
-        f.close()
+        self.map = self.init_map(mapfile)
 
     def init_punters(self, scripts):
         punters = []
@@ -26,6 +23,12 @@ class Server(object):
         for punter in self.punters:
             moves.append({"pass": {"punter": punter.id}})
         return moves
+
+    def init_map(self, mapfile):
+        f = open(mapfile)
+        mp = json.load(f)
+        f.close()
+        return mp
 
     def open_procs(self):
         for punter in self.punters:
