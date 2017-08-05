@@ -7,10 +7,12 @@ import time
 
 class Server(object):
     def __init__(self, mapfile, scripts):
+        self.phase = "INIT"
         self.punters = self.init_punters(scripts)
-        self.phase = ""
+        self.n = len(self.punters)
         self.moves = self.init_moves()
         self.map = self.init_map(mapfile)
+        self.r = len(self.map["rivers"])
 
     def init_punters(self, scripts):
         punters = []
@@ -35,7 +37,7 @@ class Server(object):
         for punter in self.punters:
             punter.open_proc()
             self.hand_shake(punter)
-            msg = {"punter": punter.id, "punters": len(self.punters), "map": self.map}
+            msg = {"punter": punter.id, "punters": self.n, "map": self.map}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
             self.log("setup reply from punter %d" % (punter.id))
@@ -45,18 +47,18 @@ class Server(object):
 
         self.phase = "GAMEPLAY"
         for i in range(len(self.map["rivers"])):
-            for punter in self.punters:
-                punter.open_proc()
-                self.hand_shake(punter)
-                msg = {"move": {"moves": self.moves}, "state": punter.state}
-                packet = self.make_packet(msg)
-                out, err = punter.proc.communicate(packet)
-                self.log("game play reply from punter %d in %d turn" % (punter.id, i))
-                self.log(out)
-                reply = json.loads(out.split(":", 1)[1])
-                punter.state = reply["state"]
-                del reply["state"]
-                self.moves.append(reply) # TODO: trim moves
+            punter = self.punters[i % self.n]
+            punter.open_proc()
+            self.hand_shake(punter)
+            msg = {"move": {"moves": self.moves}, "state": punter.state}
+            packet = self.make_packet(msg)
+            out, err = punter.proc.communicate(packet)
+            self.log("game play reply from punter %d in %d turn" % (punter.id, i))
+            self.log(out)
+            reply = json.loads(out.split(":", 1)[1])
+            punter.state = reply["state"]
+            del reply["state"]
+            self.moves.append(reply) # TODO: trim moves
 
         self.phase = "SCORING"
         scores = []
