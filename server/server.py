@@ -29,31 +29,30 @@ class Server(object):
 
     def run(self):
         self.phase = "SETUP"
-        self.open_procs()
         for punter in self.punters:
+            punter.open_proc()
             self.hand_shake(punter)
             msg = {"punter": punter.id, "punters": len(self.punters), "map": self.map}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
-            print("setup reply from punter %d" % (punter.id))
-            print(out)
+            self.log("setup reply from punter %d" % (punter.id))
+            self.log(out)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
 
         self.phase = "GAMEPLAY"
         for i in range(len(self.map["rivers"])):
-            self.open_procs()
             for punter in self.punters:
+                punter.open_proc()
                 self.hand_shake(punter)
                 msg = {"move": {"moves": self.moves}, "state": punter.state}
                 packet = self.make_packet(msg)
                 out, err = punter.proc.communicate(packet)
-                print("game play reply from punter %d in %d turn" % (punter.id, i))
-                print(out)
+                self.log("game play reply from punter %d in %d turn" % (punter.id, i))
+                self.log(out)
                 reply = json.loads(out.split(":", 1)[1])
                 punter.state = reply["state"]
                 del reply["state"]
-                print(reply)
                 self.moves.append(reply) # TODO: trim moves
 
         self.phase = "SCORING"
@@ -61,16 +60,14 @@ class Server(object):
         for punter in self.punters:
             punter.score = 0 #TODO: calc score
             scores.append({"punter": punter.id, "score": punter.score})
-        self.open_procs()
         for punter in self.punters:
+            punter.open_proc()
             self.hand_shake(punter)
             msg = {"stop": {"moves": self.moves, "scores": scores}, "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
 
-        print("result")
-        for punter in self.punters:
-            print("punter %d: %dpt" % (punter.id, punter.score))
+        print(scores)
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
@@ -96,6 +93,9 @@ class Server(object):
 
     def dump(self, msg):
         return json.dumps(msg, separators=(',', ':'))
+
+    def log(self, msg):
+        print(msg, file = sys.stderr)
 
 mapfile = sys.argv[1]
 names = sys.argv[2:]
