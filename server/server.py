@@ -15,7 +15,7 @@ class Server(object):
         self.map = self.init_map(mapfile)
         self.r = len(self.map["rivers"])
         self.graph = self.init_graph()
-        self.sites = self.init_sites()
+        self.dists = self.init_dists()
 
     def init_punters(self, scripts):
         punters = []
@@ -44,22 +44,25 @@ class Server(object):
             graph[t][s] = None
         return graph
 
-    def init_sites(self):
-        sites = {site["id"]:0 for site in self.map["sites"]}
+    def init_dists(self):
+        dists = {}
         for mine in self.map["mines"]:
-            dist = {site["id"]:-1 for site in self.map["sites"]}
-            dist[mine] = 0
+            dists[mine] = {site["id"]:-1 for site in self.map["sites"]}
+            dists[mine][mine] = 0
             q = Queue()
             q.put(mine)
             while not q.empty():
                 s = q.get()
                 for t in self.graph[s]:
-                    if dist[t] < 0:
-                        dist[t] = dist[s] + 1
+                    if dists[mine][t] < 0:
+                        dists[mine][t] = dists[mine][s] + 1
                         q.put(t)
-            for s in dist:
-                sites[s] += dist[s] * dist[s]
-        return sites
+            for s in dists[mine]:
+                if dists[mine][s] < 0:
+                    dists[mine][s] = 0
+                else:
+                    dists[mine][s] = dists[mine][s] * dists[mine][s]
+        return dists
 
     def run(self):
         self.phase = "SETUP"
@@ -113,7 +116,11 @@ class Server(object):
         self.graph[t][s] = punter.id
 
     def calc_score(self, punter):
-        pass
+        id = punter.id
+        dist = {site["id"]:-1 for site in self.map["sites"]}
+
+        reachable = {}
+
 
 
     def hand_shake(self, punter):
