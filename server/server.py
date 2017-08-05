@@ -30,10 +30,6 @@ class Server(object):
         f.close()
         return mp
 
-    def open_procs(self):
-        for punter in self.punters:
-            punter.open_proc()
-
     def run(self):
         self.phase = "SETUP"
         for punter in self.punters:
