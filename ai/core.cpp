@@ -130,9 +130,17 @@ PI exact_solve(int n, const vector<PPII> &edges, int pid, int np,
   }
   REP(qqq, 0, m + 1) {
     REP(s1, 0, 1 << m) {
-      REP(s2, 0, 1 << m) {
+      int rest = (1 << m) - s1;
+      for (int s2 = rest; true; s2 = (s2 - 1) & rest) {
 	if (s1 & s2) {
 	  continue;
+	}
+	if (__builtin_popcount(s1 | s2) != m - qqq) {
+	  if (s2 == 0) {
+	    break;
+	  } else {
+	    continue;
+	  }
 	}
 	int cur_id = (m - qqq) % 2;
 	if (qqq == 0) {
@@ -141,25 +149,25 @@ PI exact_solve(int n, const vector<PPII> &edges, int pid, int np,
 	    val = -val;
 	  }
 	  dp[qqq][s1 << m | s2] = val;
-	  continue;
-	}
-	int ma = -inf;
-	if (cur_id == 0) {
-	  REP(i, 0, m) {
-	    if ((s1 | s2) & 1 << i) { continue; }
-	    int t = dp[qqq - 1][(s1 | 1 << i) << m | s2];
-	    ma = max(ma, -t);
-	  }
 	} else {
-	  REP(i, 0, m) {
-	    if ((s1 | s2) & 1 << i) { continue; }
-	    int t = dp[qqq - 1][s1 << m | s2 | 1 << i];
-	    ma = max(ma, -t);
+	  int ma = -inf;
+	  if (cur_id == 0) {
+	    REP(i, 0, m) {
+	      if ((s1 | s2) & 1 << i) { continue; }
+	      int t = dp[qqq - 1][(s1 | 1 << i) << m | s2];
+	      ma = max(ma, -t);
+	    }
+	  } else {
+	    REP(i, 0, m) {
+	      if ((s1 | s2) & 1 << i) { continue; }
+	      int t = dp[qqq - 1][s1 << m | s2 | 1 << i];
+	      ma = max(ma, -t);
+	    }
 	  }
+	  dp[qqq][s1 << m | s2] = ma;
 	}
-	dp[qqq][s1 << m | s2] = ma;
-	if (0 && qqq == 1 && __builtin_popcount(s1 | s2) == m - 1) {
-	  cerr << "dp[" << qqq << " " << s1 << " " << s2 << "]=" << ma << "\n";
+	if (s2 == 0) {
+	  break;
 	}
       }
     }
