@@ -1,4 +1,3 @@
-from map import Map
 from punter import Punter
 
 import json
@@ -18,7 +17,7 @@ class Server(object):
 
     def init_punters(self, scripts):
         punters = []
-        for i in len(scripts):
+        for i in range(len(scripts)):
             punters.append(Punter(i, scripts[i]))
         return punters
 
@@ -31,21 +30,25 @@ class Server(object):
         self.open_procs()
         for punter in self.punters:
             self.hand_shake(punter)
-            msg = {"punter": punter.id, "punters": len(self.punters), map: self.map}
+            msg = {"punter": punter.id, "punters": len(self.punters), "map": self.map}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
-            reply = json.load(out.split(":", 1))
+            print("hand shake reply from %d" % (punter.id))
+            print(out)
+            reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
 
         self.phase = "GAMEPLAY"
-        for i in len(self.map["rivers"]):
+        for i in range(len(self.map["rivers"])):
             self.open_procs()
             for punter in self.punters:
                 self.hand_shake(punter)
                 msg = {"move": {"moves": self.moves}, "state": punter.state}
                 packet = self.make_packet(msg)
                 out, err = punter.proc.communicate(packet)
-                reply = json.load(out.split(":", 1))
+                print("game play reply from %d in %d turn" % (punter.id, i))
+                print([out])
+                reply = json.loads(out.split(":", 1)[1])
                 self.moves.append(reply["moves"]) # TODO: trim moves
                 punter.state = reply["state"]
 
@@ -72,21 +75,19 @@ class Server(object):
             s += c
 
         l = int(s)
-        json_str = proc.read(l)
-        return json.load(json_str)
+        json_str = proc.stdout.read(l)
+        return json.loads(json_str)
 
     def make_packet(self, msg):
-        s = self.dumps(msg)
+        s = self.dump(msg)
         l = len(s)
         return str(l) + ":" + s
 
     def dump(self, msg):
         return json.dumps(msg, separators=(',', ':'))
 
-mapfile = int(sys.argv[1])
+mapfile = sys.argv[1]
 names = sys.argv[2:]
 
 server = Server(mapfile, names)
-
-
-print(proc.stdout.read())
+server.run()
