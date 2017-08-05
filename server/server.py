@@ -13,6 +13,7 @@ class Server(object):
         self.moves = self.init_moves()
         self.map = self.init_map(mapfile)
         self.r = len(self.map["rivers"])
+        self.graph = self.init_graph()
 
     def init_punters(self, scripts):
         punters = []
@@ -32,6 +33,15 @@ class Server(object):
         f.close()
         return mp
 
+    def init_graph(self):
+        graph = {site["id"]:[] for site in self.map["sites"]}
+        for river in self.map["rivers"]:
+            s = river["source"]
+            t = river["target"]
+            graph[s].append({"to": t, "punter": None})
+            graph[t].append({"to": s, "punter": None})
+        return graph
+
     def run(self):
         self.phase = "SETUP"
         for punter in self.punters:
@@ -40,21 +50,21 @@ class Server(object):
             msg = {"punter": punter.id, "punters": self.n, "map": self.map}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
-            self.log("setup reply from punter %d" % (punter.id))
-            self.log(out)
+            # self.log("setup reply from punter %d" % (punter.id))
+            # self.log(out)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
 
         self.phase = "GAMEPLAY"
-        for i in range(len(self.map["rivers"])):
+        for i in range(self.r):
             punter = self.punters[i % self.n]
             punter.open_proc()
             self.hand_shake(punter)
             msg = {"move": {"moves": self.moves}, "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
-            self.log("game play reply from punter %d in %d turn" % (punter.id, i))
-            self.log(out)
+            # self.log("game play reply from punter %d in %d turn" % (punter.id, i))
+            # self.log(out)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
             del reply["state"]
