@@ -37,4 +37,6 @@ opam pin add lambda-duct https://github.com/icfpcontest2017/lambda-duct.git
 `./run-lamduct.sh (ポート番号)`で、`http://punter.inf.ed.ac.uk/`の(ポート番号)へconnectする。
 エラーログは`punt.log`へ出力される。
 
-
+# `./make-submission.sh`の使い方
+## 使い方
+`./make-submission.sh`をすると、提出用の.tar.gzファイルが生成される。これをGoogle Driveで運営のアドレス(lightning or full)とシェアすることで提出が完了する。
