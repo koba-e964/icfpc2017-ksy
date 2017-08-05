@@ -98,7 +98,7 @@ class Server(object):
         self.phase = "SCORING"
         scores = []
         for punter in self.punters:
-            punter.score = 0 #TODO: calc score
+            punter.score = self.calc_score(punter)
             scores.append({"punter": punter.id, "score": punter.score})
         for punter in self.punters:
             punter.open_proc()
@@ -117,11 +117,22 @@ class Server(object):
 
     def calc_score(self, punter):
         id = punter.id
-        dist = {site["id"]:-1 for site in self.map["sites"]}
-
-        reachable = {}
-
-
+        score = 0
+        for mine in self.map["mines"]:
+            reachable = {site["id"]:False for site in self.map["sites"]}
+            reachable[mine] = True
+            q = Queue()
+            q.put(mine)
+            while not q.empty():
+                s = q.get()
+                for t in self.graph[s]:
+                    if not reachable[t] and self.graph[s][t] == id:
+                        reachable[t] = True
+                        q.put(t)
+            for s in reachable:
+                if reachable[s]:
+                    score += self.dists[mine][s]
+        return score
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
