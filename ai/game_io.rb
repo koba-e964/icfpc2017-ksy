@@ -39,6 +39,7 @@ class GameIO
       # Setup
       pid = income['punter'].to_i
       income['claimed'] = []
+      income['rem'] = income['map']['rivers'].size - pid
       self.send({"ready" => pid, 'state' => income})
       return
     end
@@ -49,6 +50,7 @@ class GameIO
       pid = state['punter']
       n = state['punters']
       map = state['map']
+      rem = state['rem']
       claimed = state['claimed']
       for mv in income['move']['moves']
         if mv['claim']
@@ -56,7 +58,8 @@ class GameIO
           claimed << [cl['punter'], cl['source'], cl['target']]
         end
       end
-      move = @ai.move(pid, n, map, claimed)
+      move = @ai.move(pid, n, map, claimed, rem)
+      state['rem'] = rem - n
       move['state'] = state
       self.send(move)
       return

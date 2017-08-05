@@ -1,0 +1,1 @@
+make CXXFLAGS="-Wall -O2" ai/core
