@@ -9,9 +9,7 @@ class Server(object):
     def __init__(self, mapfile, scripts):
         self.punters = self.init_punters(scripts)
         self.phase = ""
-        self.moves = []
-        for punter in self.punters:
-            self.moves.append({"pass": {"punter": punter.id}})
+        self.moves = self.init_moves()
 
         f = open(mapfile)
         self.map = json.load(f)
@@ -22,6 +20,12 @@ class Server(object):
         for i in range(len(scripts)):
             punters.append(Punter(i, scripts[i]))
         return punters
+
+    def init_moves(self):
+        moves = []
+        for punter in self.punters:
+            moves.append({"pass": {"punter": punter.id}})
+        return moves
 
     def open_procs(self):
         for punter in self.punters:
