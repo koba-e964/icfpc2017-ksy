@@ -1,0 +1,8 @@
+{
+    "time_start" : 200,
+    "time_end" : 5000,
+    "tau" : 50,
+    "input_min" : 0.0,
+    "input_max" : 0.25,
+    "input_levels" : 10
+}
