@@ -42,7 +42,7 @@ in one line.
       end
       edges << [e['source'], e['target'], col]
     end
-    io = IO.popen('ai/core', 'r+')
+    io = IO.popen('src/core', 'r+')
     io.puts("#{n} #{m} #{k} #{pid} #{np} #{rem}")
     for i in 0 ... m
       io.puts(edges[i].join(' '))
