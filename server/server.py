@@ -1,4 +1,5 @@
 from punter import Punter
+from map import Map
 
 import json
 import sys
@@ -12,10 +13,7 @@ class Server(object):
         self.punters = self.init_punters(scripts)
         self.n = len(self.punters)
         self.moves = self.init_moves()
-        self.map = self.init_map(mapfile)
-        self.r = len(self.map["rivers"])
-        self.graph = self.init_graph()
-        self.dists = self.init_dists()
+        self.map = Map(mapfile)
 
     def init_punters(self, scripts):
         punters = []
@@ -29,47 +27,12 @@ class Server(object):
             moves.append({"pass": {"punter": punter.id}})
         return moves
 
-    def init_map(self, mapfile):
-        f = open(mapfile)
-        mp = json.load(f)
-        f.close()
-        return mp
-
-    def init_graph(self):
-        graph = {site["id"]:{} for site in self.map["sites"]}
-        for river in self.map["rivers"]:
-            s = river["source"]
-            t = river["target"]
-            graph[s][t] = None
-            graph[t][s] = None
-        return graph
-
-    def init_dists(self):
-        dists = {}
-        for mine in self.map["mines"]:
-            dists[mine] = {site["id"]:-1 for site in self.map["sites"]}
-            dists[mine][mine] = 0
-            q = Queue()
-            q.put(mine)
-            while not q.empty():
-                s = q.get()
-                for t in self.graph[s]:
-                    if dists[mine][t] < 0:
-                        dists[mine][t] = dists[mine][s] + 1
-                        q.put(t)
-            for s in dists[mine]:
-                if dists[mine][s] < 0:
-                    dists[mine][s] = 0
-                else:
-                    dists[mine][s] = dists[mine][s] * dists[mine][s]
-        return dists
-
     def run(self):
         self.phase = "SETUP"
         for punter in self.punters:
             punter.open_proc()
             self.hand_shake(punter)
-            msg = {"punter": punter.id, "punters": self.n, "map": self.map}
+            msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
             # self.log("setup reply from punter %d" % (punter.id))
@@ -78,7 +41,7 @@ class Server(object):
             punter.state = reply["state"]
 
         self.phase = "GAMEPLAY"
-        for i in range(self.r):
+        for i in range(self.map.r):
             punter = self.punters[i % self.n]
             punter.open_proc()
             self.hand_shake(punter)
@@ -92,13 +55,13 @@ class Server(object):
             del reply["state"]
             print(reply)
             if "claim" in reply:
-                self.update_graph(reply["claim"], punter)
+                self.map.update_graph(reply["claim"], punter)
             self.moves.append(reply)
 
         self.phase = "SCORING"
         scores = []
         for punter in self.punters:
-            punter.score = self.calc_score(punter)
+            punter.score = self.map.calc_score(punter)
             scores.append({"punter": punter.id, "score": punter.score})
         for punter in self.punters:
             punter.open_proc()
@@ -108,31 +71,6 @@ class Server(object):
             out, err = punter.proc.communicate(packet)
 
         print(scores)
-
-    def update_graph(self, claim, punter): #TODO: error handling
-        s = claim["source"]
-        t = claim["target"]
-        self.graph[s][t] = punter.id
-        self.graph[t][s] = punter.id
-
-    def calc_score(self, punter):
-        id = punter.id
-        score = 0
-        for mine in self.map["mines"]:
-            reachable = {site["id"]:False for site in self.map["sites"]}
-            reachable[mine] = True
-            q = Queue()
-            q.put(mine)
-            while not q.empty():
-                s = q.get()
-                for t in self.graph[s]:
-                    if not reachable[t] and self.graph[s][t] == id:
-                        reachable[t] = True
-                        q.put(t)
-            for s in reachable:
-                if reachable[s]:
-                    score += self.dists[mine][s]
-        return score
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
