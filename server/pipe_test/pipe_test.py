@@ -1,14 +1,15 @@
-import subprocess
-from subprocess import PIPE
+#! /usr/bin/python
 
-pipe = subprocess.Popen("python echo1.py", shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=False)
+import sys
+from subprocess import PIPE, Popen
 
-pipe.stdin.write(b"hoge")
+pipe = Popen("./echo1.py", shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+
+pipe.stdin.write("20\n")
 pipe.stdin.flush()
 
-for line in iter(pipe.stdout.readline,''):
-   print(line)
-   break
+line = pipe.stdout.readline()
+print(line)
 
 out, err = pipe.communicate(line)
 

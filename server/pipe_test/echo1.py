@@ -1,9 +1,14 @@
-import sys
+#! /usr/bin/python
 
-s = input()
+import sys
+import time
+
+
+s = raw_input()
+
+
 print(s + '!')
 sys.stdout.flush()
 
-
-t = input()
+t = raw_input()
 print(t + '!!')
