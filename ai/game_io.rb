@@ -33,26 +33,32 @@ class GameIO
     name = 'master_thesis'
     self.send({"me" => name})
     msg = self.recv()
-    STDERR.puts(msg)
 
     income = self.recv()
-    STDERR.puts(income)
     if income['punter']
       # Setup
       pid = income['punter'].to_i
+      income['claimed'] = []
       self.send({"ready" => pid, 'state' => income})
-      STDERR.puts('setup done')
       return
     end
     if income['move']
       # Gameplay
-      STDERR.puts('moving')
       state = income['state']
       prev = income
-      pid = state['punter'].to_i
-      # TODO stub: always passes
-      self.send({'pass' => {'punter' => pid}, 'state' => state})
-      STDERR.puts('move claimed')
+      pid = state['punter']
+      n = state['punters']
+      map = state['map']
+      claimed = state['claimed']
+      for mv in income['move']['moves']
+        if mv['claim']
+          cl = mv['claim']
+          claimed << [cl['punter'], cl['source'], cl['target']]
+        end
+      end
+      move = @ai.move(pid, n, map, claimed)
+      move['state'] = state
+      self.send(move)
       return
     end
     if income['stop']
