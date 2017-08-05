@@ -92,12 +92,9 @@ class Server(object):
         return json.loads(json_str)
 
     def make_packet(self, msg):
-        s = self.dump(msg)
+        s = json.dumps(msg, separators=(',', ':'))
         l = len(s)
         return str(l) + ":" + s
-
-    def dump(self, msg):
-        return json.dumps(msg, separators=(',', ':'))
 
     def log(self, msg):
         print(msg, file = sys.stderr)
