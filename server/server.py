@@ -3,9 +3,9 @@ from map import Map
 
 import json
 import sys
-from subprocess import Popen, PIPE
 import time
 from queue import Queue
+from subprocess import Popen, PIPE
 
 class Server(object):
     def __init__(self, mapfile, scripts):
@@ -30,7 +30,7 @@ class Server(object):
     def run(self):
         self.phase = "SETUP"
         for punter in self.punters:
-            punter.open_proc()
+            self.open_proc(punter)
             self.hand_shake(punter)
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
             packet = self.make_packet(msg)
@@ -43,9 +43,10 @@ class Server(object):
         self.phase = "GAMEPLAY"
         for i in range(self.map.r):
             punter = self.punters[i % self.n]
-            punter.open_proc()
+            self.open_proc(punter)
             self.hand_shake(punter)
-            msg = {"move": {"moves": self.moves[-self.n:]}, "state": punter.state}
+            msg = {"move": {"moves": self.moves[-self.n:]},
+                   "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
             # self.log("game play reply from punter %d in %d turn" % (punter.id, i))
@@ -64,13 +65,17 @@ class Server(object):
             punter.score = self.map.calc_score(punter)
             scores.append({"punter": punter.id, "score": punter.score})
         for punter in self.punters:
-            punter.open_proc()
+            self.open_proc(punter)
             self.hand_shake(punter)
-            msg = {"stop": {"moves": self.moves, "scores": scores}, "state": punter.state}
+            msg = {"stop": {"moves": self.moves, "scores": scores},
+                   "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
 
         print(scores)
+
+    def open_proc(self, punter):
+        punter.proc = Popen("ruby " + punter.script, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
@@ -82,20 +87,24 @@ class Server(object):
         s = ""
         while True:
             c = proc.stdout.read(1)
-            if c == ":": break
+            if c == ":":
+                break
             s += c
 
         l = int(s)
         json_str = proc.stdout.read(l)
         return json.loads(json_str)
 
-    def make_packet(self, msg):
+    @staticmethod
+    def make_packet(msg):
         s = json.dumps(msg, separators=(',', ':'))
         l = len(s)
         return str(l) + ":" + s
 
-    def log(self, msg):
-        print(msg, file = sys.stderr)
+    @staticmethod
+    def log(msg):
+        print(msg, file=sys.stderr)
+
 
 mapfile = sys.argv[1]
 names = sys.argv[2:]
