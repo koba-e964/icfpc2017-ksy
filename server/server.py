@@ -4,6 +4,7 @@ import json
 import sys
 from subprocess import Popen, PIPE
 import time
+from queue import Queue
 
 class Server(object):
     def __init__(self, mapfile, scripts):
@@ -14,6 +15,7 @@ class Server(object):
         self.map = self.init_map(mapfile)
         self.r = len(self.map["rivers"])
         self.graph = self.init_graph()
+        self.sites = self.init_sites()
 
     def init_punters(self, scripts):
         punters = []
@@ -40,8 +42,24 @@ class Server(object):
             t = river["target"]
             graph[s][t] = None
             graph[t][s] = None
-        self.log(graph)
         return graph
+
+    def init_sites(self):
+        sites = {site["id"]:0 for site in self.map["sites"]}
+        for mine in self.map["mines"]:
+            dist = {site["id"]:-1 for site in self.map["sites"]}
+            dist[mine] = 0
+            q = Queue()
+            q.put(mine)
+            while not q.empty():
+                s = q.get()
+                for t in self.graph[s]:
+                    if dist[t] < 0:
+                        dist[t] = dist[s] + 1
+                        q.put(t)
+            for s in dist:
+                sites[s] += dist[s] * dist[s]
+        return sites
 
     def run(self):
         self.phase = "SETUP"
@@ -88,11 +106,15 @@ class Server(object):
 
         print(scores)
 
-    def update_graph(self, claim, punter):
+    def update_graph(self, claim, punter): #TODO: error handling
         s = claim["source"]
         t = claim["target"]
         self.graph[s][t] = punter.id
         self.graph[t][s] = punter.id
+
+    def calc_score(self, punter):
+        pass
+
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
