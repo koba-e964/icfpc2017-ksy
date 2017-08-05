@@ -3,7 +3,7 @@ require_relative './game_io.rb'
 
 class PassAI
   # returns [move, new_state]
-  def move(pid, num_punters, map, claimed)
+  def move(pid, num_punters, map, claimed, rem)
     sites = map['sites']
     rivers = map['rivers']
     mines = map['mines']
@@ -40,16 +40,16 @@ in one line.
       if cl[[e['source'], e['target']]]
         col = cl[[e['source'], e['target']]]
       end
-      edges << [e['source'] - 1, e['target'] - 1, col]
+      edges << [e['source'], e['target'], col]
     end
     io = IO.popen('ai/core', 'r+')
-    io.puts("#{n} #{m} #{k} #{pid} #{np}")
+    io.puts("#{n} #{m} #{k} #{pid} #{np} #{rem}")
     for i in 0 ... m
       io.puts(edges[i].join(' '))
     end
     mine_ids = []
     for i in 0 ... k
-      mine_ids << (mines[i] - 1).to_s
+      mine_ids << (mines[i]).to_s
     end
     io.puts(mine_ids.join(' '))
     io.close_write
@@ -58,8 +58,8 @@ in one line.
     if answer[0] == 'pass'
       {'pass' => {'punter' => pid}}
     else
-      s = answer[1].to_i + 1
-      t = answer[2].to_i + 1
+      s = answer[1].to_i
+      t = answer[2].to_i
       STDERR.puts('claiming ' + [s, t] * ' ')
       {'claim' => {'punter' => pid, 'source' => s, 'target' => t}}
     end
