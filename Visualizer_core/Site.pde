@@ -31,7 +31,7 @@ public class Site implements Cloneable{
     if(this.isMine){
       //debug this so that it shows the circle red
       fill(255, 0, 0);
-      r = 10.0;
+      r = 12.0;
     } else {
       fill(255);
       r = 5.0;
