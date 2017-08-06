@@ -6,7 +6,7 @@ public class ColorPallet{
       #FF2121, //red
       #5221DB, //blue
       #20D333, //green
-      #FEFF29, //yellow
+      #F5ED00, //yellow
       #E230FA, //purple
       #4BFAFF, //pale blue
       #B7FF4D, //pale green
