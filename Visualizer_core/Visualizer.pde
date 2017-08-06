@@ -1,37 +1,33 @@
 public class Visualizer{
   Map G;
-  int cur;
   int moves[][];//{id, source, target}
+  int cur;
   int last;
+  int curRiverId;
+  int prevRiverId;
   
   public Visualizer(Site[] sites, int[][] rivers, int[][] moves){
     this.G = new Map(sites, rivers);
     this.cur = 0;
+    this.curRiverId = 0;
     this.moves = new int[moves.length][];
     this.last = this.moves.length;
     for(int i = 0; i < moves.length; i++){
       this.moves[i] = new int[3];
       System.arraycopy(moves[i], 0, this.moves[i], 0, 3);
-      println(moves[i][0], moves[i][1], moves[i][2]);
     }
   }
   
   public void initMap(){
-    int n = this.G.riverNum();
-    for(int i = 0; i < n; i++){
-      this.G.resetOwner(i);
+    for(int i = this.cur; i > 0; i--){
+      this.moveBackward();
     }
-    this.cur = 0;
   }
   
   public void finalResult(){
-    for(int i = 0; i < this.moves.length; i++){
-      if(this.moves[i][0] != -1){
-        int id = this.G.findRiver(this.moves[i][1], this.moves[i][2]);
-        this.G.setOwner(id, moves[i][0]);
-      }
+    for(int i = cur; i < last; i++){
+      this.moveForward();
     }
-    this.cur = this.last;
   }
   
   public void moveForward(){
@@ -39,8 +35,8 @@ public class Visualizer{
       return;
     }
     if(this.moves[cur][0] != -1){
-      int id = this.G.findRiver(this.moves[this.cur][1], this.moves[this.cur][2]);
-      this.G.setOwner(id, moves[cur][0]);
+      this.curRiverId = this.G.findRiver(this.moves[this.cur][1], this.moves[this.cur][2]);
+      this.G.setOwner(this.curRiverId, moves[cur][0]);
     }
     this.cur++;
   }
@@ -51,13 +47,21 @@ public class Visualizer{
     }
     this.cur--;
     if(this.moves[this.cur][0] != -1){
-      int id = this.G.findRiver(this.moves[this.cur][1], this.moves[this.cur][2]);
-      this.G.resetOwner(id);
+      int Id = this.G.findRiver(this.moves[this.cur][1], this.moves[this.cur][2]);
+      this.G.resetOwner(Id);
+    }
+    
+    if(cur > 0){
+      this.curRiverId = this.G.findRiver(this.moves[this.cur-1][1], this.moves[this.cur-1][2]);
     }
   }
 
   public void drawMap(){
-    this.G.drawRivers();
+    this.G.drawRivers(this.curRiverId);
     this.G.drawSites();
+  }
+  
+  public int currentTurn(){
+    return this.cur;
   }
 }

@@ -50,6 +50,12 @@ public class Site implements Cloneable{
     line(this.posX, this.posY, t.posX, t.posY);
   }
   
+  public void drawPathToSiteBold(Site t, int id){
+    pallet.setColor(id);
+    strokeWeight(6);
+    line(this.posX, this.posY, t.posX, t.posY);
+  }
+  
   public void setMine(){
     this.isMine = true;
   }

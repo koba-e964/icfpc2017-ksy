@@ -62,7 +62,6 @@ void keyPressed(){
       v.finalResult();
     } else if(keyCode == RIGHT){
       v.moveForward();
-      println("right");
     } else if(keyCode == LEFT){
       v.moveBackward();
     }
@@ -73,4 +72,8 @@ void draw(){
   background(255);
   translate(width/2, height/2);
   v.drawMap();
+  translate(-width/2, -height/2);
+    
+  fill(0);
+  text(v.currentTurn(), mouseX+10, mouseY+20);
 }
