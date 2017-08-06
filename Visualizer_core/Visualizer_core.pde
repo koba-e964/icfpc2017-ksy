@@ -54,6 +54,21 @@ void setup(){
   v.finalResult();
 }
 
+void keyPressed(){
+  if(key == CODED){
+    if(keyCode == UP){
+      v.initMap();
+    } else if(keyCode == DOWN) {
+      v.finalResult();
+    } else if(keyCode == RIGHT){
+      v.moveForward();
+      println("right");
+    } else if(keyCode == LEFT){
+      v.moveBackward();
+    }
+  }
+}
+
 void draw(){
   background(255);
   translate(width/2, height/2);
