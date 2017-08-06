@@ -14,6 +14,7 @@ class Server(object):
         self.n = len(self.punters)
         self.moves = self.init_moves()
         self.map = Map(mapfile)
+        self.evals = []
 
     def init_punters(self, scripts):
         punters = []
@@ -35,8 +36,8 @@ class Server(object):
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
-            # self.log("setup reply from punter %d" % (punter.id))
-            # self.log(out)
+            self.log("setup phase of punter %d:" % (punter.id))
+            self.log(err)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
 
@@ -49,22 +50,17 @@ class Server(object):
                    "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
-            # self.log("game play reply from punter %d in %d turn" % (punter.id, i))
-            # self.log(out)
+            self.log("gameplay phase of punter %d (turn %d):" % (punter.id, i))
+            self.log(err)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
             del reply["state"]
-            self.log(reply)
             if "claim" in reply:
                 self.map.update_graph(reply["claim"], punter)
             self.moves.append(reply)
 
         self.phase = "SCORING"
-        scores = []
-        for punter in self.punters:
-            punter.score = self.map.calc_score(punter)
-            scores.append({"punter": punter.id, "score": punter.score})
-        self.log(scores)
+        scores = self.cacl_scores()
         for punter in self.punters:
             self.open_proc(punter)
             self.hand_shake(punter)
@@ -72,11 +68,23 @@ class Server(object):
                    "state": punter.state}
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
+            self.log("scoring phase of punter %d:" % (punter.id))
+            self.log(err)
+
+        self.log("result:")
+        self.log(scores)
 
         log = {"map": self.map.map,
                 "moves": self.moves[2:],
                 "scores": scores}
         print(json.dumps(log, separators=(',', ':')))
+
+    def cacl_scores(self):
+        scores = []
+        for punter in self.punters:
+            punter.score = self.map.calc_score(punter)
+            scores.append({"punter": punter.id, "score": punter.score})
+        return scores
 
     def open_proc(self, punter):
         punter.proc = Popen("ruby " + punter.script, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
