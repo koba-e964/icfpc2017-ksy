@@ -1,6 +1,12 @@
 Visualizer v;
-float centerX, centerY;
 float centerX = 0.0, centerY = 0.0;
+float lengthX, lengthY;
+float globalScale = 1.0;
+
+//mouse control
+float prevX = 0.0, prevY = 0.0;
+float draggedX = 0.0, draggedY = 0.0;
+boolean isReleased = true;
 
 void setup(){
   background(255);
@@ -88,15 +94,42 @@ void keyPressed(){
     } else if(keyCode == LEFT){
       v.moveBackward();
     }
+  } else if(key == '['){
+    globalScale *= 1.1;
+  } else if(key == ']'){
+    globalScale /= 1.1;
+  } else if(key == 'r'){
+    globalScale = 1.0;
   }
+}
+
+void mouseDragged(){
+  if(isReleased){
+    isReleased = false;
+    prevX = mouseX;
+    prevY = mouseY;
+  }
+  if(mouseX - prevX != 0 || mouseY - prevY != 0){
+    draggedX += mouseX - prevX;
+    draggedY += mouseY - prevY;
+  }
+  prevX = mouseX;
+  prevY = mouseY;
+}
+
+void mouseReleased(){
+  isReleased = true;
 }
 
 void draw(){
   background(255);
-  translate(width/2 - centerX, height/2 - centerY);
+  scale(globalScale);
+  translate(centerX + draggedX, centerY + draggedY);
   v.drawMap();
-  translate(-width/2 + centerX, -height/2 + centerY);
-    
+  translate(-centerX - draggedX, -centerY - draggedY);
+  
+  scale(1.0 / globalScale);
   fill(0);
-  text(v.currentTurn(), mouseX+10, mouseY+20);
+  textSize(16);
+  text("Turn:" + v.currentTurn(), mouseX+10, mouseY+20);
 }
