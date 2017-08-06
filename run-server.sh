@@ -1,1 +1,1 @@
-python server/server.py maps/sample.json ./src/main.rb ./src/main.rb > log/`date +"%k-%M-%S"`.json
+python server/server.py $1 ./src/main.rb ./src/main.rb > log/`date +"%k-%M-%S"`.json
