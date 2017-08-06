@@ -1,1 +1,1 @@
-make CXXFLAGS="-Wall -O2" src/core
+make -C src/ core
