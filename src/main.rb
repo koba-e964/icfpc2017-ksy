@@ -3,7 +3,7 @@ require_relative './game_io.rb'
 
 class PassAI
   # returns [move, new_state]
-  def move(pid, num_punters, map, claimed, rem)
+  def move(pid, num_punters, map, claimed, rem, setup=false, tbl=nil)
     sites = map['sites']
     rivers = map['rivers']
     mines = map['mines']
@@ -14,17 +14,23 @@ s_1 t_1 c_1
 ...
 s_m t_m c_m (edges)
 a_1 ... a_k (mines)
+mode
 
 0 <= s_i, t_i < m
 -1 <= c_i < np (-1: not claimed)
 0 <= a_i < n
 
 
-The C++ program should return
-'pass'
-or
-'claim s t'
-in one line.
+if mode == 'state'
+  The C++ program should return
+  'tbl (state)'
+  where state is a string representing a state (without spaces)
+if mode == 'run'
+  The C++ program should return
+  'pass'
+  or
+  'claim s t'
+  in one line.
     """
     n = sites.size
     m = rivers.size
@@ -52,9 +58,33 @@ in one line.
       mine_ids << (mines[i]).to_s
     end
     io.puts(mine_ids.join(' '))
+    if setup
+      io.puts('setup')
+    else
+      io.puts('run')
+      io.puts(tbl)
+    end
     io.close_write
-    answer = io.gets.chomp.split
-    STDERR.puts("answer from core: " + answer.inspect)
+    if setup
+      answer = io.gets.chomp.split
+      if answer[0] == 'tbl'
+        STDERR.puts("Got tbl (len = #{answer[1].size})")
+        return answer[1]
+      end
+      raise Exception
+    end
+    while answer = io.gets.chomp.split
+      STDERR.puts("answer from core: " + answer.inspect)
+      if answer[0] != 'info'
+        break
+      end
+      # info eval (turns) (value)
+      if answer[1] == 'eval'
+        turns = answer[2].to_i
+        val = answer[3].to_i
+        STDERR.puts("evaluation: turns=#{turns}, value=#{val}")
+      end
+    end
     if answer[0] == 'pass'
       {'pass' => {'punter' => pid}}
     else

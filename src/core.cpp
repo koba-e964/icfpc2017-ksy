@@ -106,12 +106,53 @@ int eval_board(int n, const vector<PPII> &edges, int s1, int s2, int mbits, vect
   return sc1 - sc2;
 }
 
-PI exact_solve(int n, const vector<PPII> &edges, int pid, int np,
+PI exact_solve(int n, const vector<PPII> &edges, const VI &dp, int pid, int np,
 	       int mbits, int remain, int &eval) {
   int m = edges.size();
   assert (np == 2);
   assert (remain >= 1);
   assert (remain <= m);
+  int s1 = 0, s2 = 0;
+  REP(i, 0, m) {
+    int c = edges[i].second;
+    if (c == 0) {
+      s1 |= 1 << i;
+    } else if (c == 1) {
+      s2 |= 1 << i;
+    }
+  }
+  int ma = -inf;
+  int maxi = -1;
+  if (pid == 0) {
+    REP(i, 0, m) {
+      if ((s1 | s2) & 1 << i) { continue; }
+      int t = dp[(s1 | 1 << i) << m | s2];
+      if (ma < -t) {
+	ma = -t;
+	maxi = i;
+      }
+    }
+  } else {
+    REP(i, 0, m) {
+      if ((s1 | s2) & 1 << i) { continue; }
+      int t = dp[s1 << m | s2 | 1 << i];
+      if (ma < -t) {
+	ma = -t;
+	maxi = i;
+      }
+    }
+  }
+  eval = ma;
+  if (maxi == -1) {
+    return PI(-1, -1);
+  }
+  return edges[maxi].first;
+}
+
+
+vector<VI> exact_solve_setup(int n, const vector<PPII> &edges,
+	       int mbits) {
+  int m = edges.size();
   vector<VI> dp(m + 1, VI(1 << (2 * m), -1));
   vector<VI> dist(n, VI(n, inf));
   REP(i, 0, m) {
@@ -172,44 +213,70 @@ PI exact_solve(int n, const vector<PPII> &edges, int pid, int np,
       }
     }
   }
-  int s1 = 0, s2 = 0;
-  REP(i, 0, m) {
-    int c = edges[i].second;
-    if (c == 0) {
-      s1 |= 1 << i;
-    } else if (c == 1) {
-      s2 |= 1 << i;
-    }
-  }
-  int ma = -inf;
-  int maxi = -1;
-  if (pid == 0) {
-    REP(i, 0, m) {
-      if ((s1 | s2) & 1 << i) { continue; }
-      int t = dp[remain - 1][(s1 | 1 << i) << m | s2];
-      if (ma < -t) {
-	ma = -t;
-	maxi = i;
-      }
-    }
-  } else {
-    REP(i, 0, m) {
-      if ((s1 | s2) & 1 << i) { continue; }
-      int t = dp[remain - 1][s1 << m | s2 | 1 << i];
-      if (ma < -t) {
-	ma = -t;
-	maxi = i;
-      }
-    }
-  }
-  eval = ma;
-  if (maxi == -1) {
-    return PI(-1, -1);
-  }
-  return edges[maxi].first;
+  return dp;
 }
 
-#if 1
+void set_hex(int x, string &s, int idx, int len = 8) {
+  char c[17] = "0123456789abcdef";
+  REP(i, 0, len) {
+    int b = x & 15;
+    s[idx + i] = c[b];
+    x >>= 4;
+  }
+}
+
+int read_hex(const string &s, int idx, int len) {
+  int v = 0;
+  REP(i, 0, len) {
+    char c = s[idx + i];
+    int d = 0;
+    if (c >= '0' && c <= '9') {
+      d = c - '0';
+    } else {
+      d = c - 'a' + 10;
+    }
+    v |= d << (4 * i);
+  }
+  return v;
+}
+
+string encode_tbl(const VI &tbl) {
+  int n = tbl.size();
+  string ss(9 * n + 8, '-');
+  set_hex(n, ss, 0);
+  int pos = 8;
+  REP(j, 0, n) {
+    int v = tbl[j];
+    if (v >= -64 && v <= 63) {
+      set_hex(v, ss, pos, 1);
+      pos += 1;
+    } else {
+      set_hex(0x80, ss, pos, 1);
+      set_hex(v, ss, pos + 1, 8);
+      pos += 9;
+    }
+  }
+  return ss.substr(0, pos);
+}
+
+VI decode_tbl(const string &s) {
+  int len = read_hex(s, 0, 8);
+  VI ret(len, -inf);
+  int pos = 8;
+  REP(i, 0, len) {
+    int val = read_hex(s, pos, 1);
+    if ((val & 0xff) == 0x80) {
+      val = read_hex(s, pos + 1, 8);
+      pos += 9;
+    } else {
+      pos += 1;
+    }
+    ret[i] = val;
+  }
+  return ret;
+}
+
+
 int main(void) {
   ios::sync_with_stdio(false);
   cin.tie(0);
@@ -225,16 +292,50 @@ int main(void) {
   REP(i, 0, k) {
     cin >> mines[i];
   }
+  string mode;
+  cin >> mode;
   cerr << "Input read (C++)" << endl;
   if (np == 2 && m <= 12) {
     int mbits = 0;
     REP(i, 0, k) {
       mbits |= 1 << mines[i];
     }
-    cerr << "Exact evaluation..." << endl;
+    if (mode == "setup") {
+      cerr << "setup..." << endl;
+      vector<VI> tbl = exact_solve_setup(n, edges, mbits);
+      cerr << "tbl ready" << endl;
+      VI comp;
+      REP(i, 0, 1 << (2 * m)) {
+	int cc = __builtin_popcount(i);
+	int s1 = i >> m;
+	int s2 = i & ((1 << m) - 1);
+	if (cc <= m && (s1 & s2) == 0) {
+	  comp.push_back(tbl[m - cc][i]);
+	}
+      }
+      string encode = encode_tbl(comp);
+      cerr << "tbl_len = " << encode.length() << endl;
+      cout << "tbl " << encode << endl;
+      return 0;
+    }
+    string tbl;
+    cin >> tbl;
+    VI pre_dp = decode_tbl(tbl);
+    int pos = 0;
+    VI dp(1 << (2 * m), -inf);
+    REP(i, 0, 1 << (2 * m)) {
+	int cc = __builtin_popcount(i);
+	int s1 = i >> m;
+	int s2 = i & ((1 << m) - 1);
+	if (cc <= m && (s1 & s2) == 0) {
+	  dp[i] = pre_dp[pos];
+	  pos++;
+	}
+    }
+    cerr << "tbl loaded" << endl;
     int value;
-    PI res = exact_solve(n, edges, pid, np, mbits, rem, value);
-    cerr << "Evaluation: " << value << endl;
+    PI res = exact_solve(n, edges, dp, pid, np, mbits, rem, value);
+    cout << "info eval -1 " << value << endl;
     if (res.first == -1) {
       cout << "pass\n";
     } else {
@@ -251,8 +352,3 @@ int main(void) {
   }
   cout << "pass" << endl;
 }
-#else
-int main(void) {
-  
-}
-#endif
