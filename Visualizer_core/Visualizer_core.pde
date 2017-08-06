@@ -1,28 +1,20 @@
-Site s, t, u, v;
 Site[] sites;
 int[][] rivers;
-Map testMap;
-
-JSONObject gameMapJSON;
+int[][] moves;
+Visualizer v;
 
 void setup(){
   background(255);
   size(640, 480);
-
-  //Test section for implemented classes
-  //s = new Site(0, true, 20.0, 30.0);
-  //t = new Site(1, false, 50.0, 100.0);
-  //u = new Site(2, false, 100.0, 30.0); 
-  //v = new Site(3, true, 75.0, 80.0);
-
-  //sites = new Site[]{s,t,u,v};
-  
-  //rivers = new int[][]{{1,2,-1},{2,3,1},{3,0,2},{0,1,0}};
     
-  gameMapJSON = loadJSONObject("sample.json");
-  JSONArray siteArray = gameMapJSON.getJSONArray("sites");
-  JSONArray riverArray = gameMapJSON.getJSONArray("rivers");
-  JSONArray mineArray = gameMapJSON.getJSONArray("mines");
+  JSONObject gameJSON = loadJSONObject("sample_log.json");
+
+  JSONObject mapJSON = gameJSON.getJSONObject("map");
+  JSONArray moveJSON = gameJSON.getJSONArray("moves");
+  
+  JSONArray siteArray = mapJSON.getJSONArray("sites");
+  JSONArray riverArray = mapJSON.getJSONArray("rivers");
+  JSONArray mineArray = mapJSON.getJSONArray("mines");
   
   sites = new Site[siteArray.size()];
   for(int i = 0; i < siteArray.size(); i++){
@@ -38,17 +30,32 @@ void setup(){
     JSONObject riverJSON = riverArray.getJSONObject(i);
     int source = riverJSON.getInt("source");
     int target = riverJSON.getInt("target");
-    rivers[i] = new int[]{source, target, 2};
+    rivers[i] = new int[]{source, target, -1};
   }
   
   for(int n: mineArray.getIntArray()){
     sites[n].setMine();
   }
-  testMap = new Map(sites, rivers);
+  
+  moves = new int[moveJSON.size()][];
+  for(int i = 0; i < moveJSON.size(); i++){
+    if(moveJSON.getJSONObject(i).hasKey("pass")){
+      moves[i] = new int[]{-1,-1,-1};
+    } else {
+      JSONObject claim = moveJSON.getJSONObject(i).getJSONObject("claim");
+      int id, source, target;
+      id = claim.getInt("punter");
+      source = claim.getInt("source");
+      target = claim.getInt("target");
+      moves[i] = new int[]{id, source, target};
+    }
+  }
+  v = new Visualizer(sites, rivers, moves);
+  v.finalResult();
 }
 
 void draw(){
+  background(255);
   translate(width/2, height/2);
-  testMap.drawRivers();
-  testMap.drawSites();
+  v.drawMap();
 }

@@ -1,5 +1,5 @@
 public class Map {
-  int[][] rivers; // -1 for unclaimed
+  int[][] rivers; // -1 for unclaimed {source, target, id}
   Site[] map;
   
   public Map(Site[] sites, int[][] rivers){
@@ -40,5 +40,22 @@ public class Map {
     for(int i = 0; i < this.mapSize(); i++){
       this.map[i].drawSite();
     }
+  }
+  
+  public void setOwner(int riverId, int ownerId){
+    this.rivers[riverId][2] = ownerId;
+  }
+  
+  public void resetOwner(int riverId){
+    this.rivers[riverId][2] = -1;
+  }
+  
+  public int findRiver(int source, int target){
+    for(int i = 0; i < rivers.length; i++){
+      if(rivers[i][0] == source && rivers[i][1] == target){
+        return i;
+      }
+    }
+    return -1;//failed to find such a river
   }
 }
