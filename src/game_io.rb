@@ -63,8 +63,9 @@ class GameIO
           claimed << [cl['punter'], cl['source'], cl['target']]
         end
       end
-      move = @ai.move(pid, n, map, claimed, rem, false, tbl)
+      move, eval = @ai.move(pid, n, map, claimed, rem, false, tbl)
       state['rem'] = rem - n
+      state['eval'] = eval
       move['state'] = state
       self.send(move)
       return

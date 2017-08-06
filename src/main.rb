@@ -65,33 +65,34 @@ if mode == 'run'
       io.puts(tbl)
     end
     io.close_write
-    if setup
-      answer = io.gets.chomp.split
-      if answer[0] == 'tbl'
-        STDERR.puts("Got tbl (len = #{answer[1].size})")
-        return answer[1]
-      end
-      raise Exception
-    end
+    eval = 0
+    STDERR.puts("playing as punter #{pid} (total = #{num_punters})")
     while answer = io.gets.chomp.split
-      STDERR.puts("answer from core: " + answer.inspect)
       if answer[0] != 'info'
         break
       end
       # info eval (turns) (value)
       if answer[1] == 'eval'
         turns = answer[2].to_i
-        val = answer[3].to_i
-        STDERR.puts("evaluation: turns=#{turns}, value=#{val}")
+        eval = answer[3].to_i
+        if turns >= 0
+          STDERR.puts("evaluation: turns=#{turns}, value=#{eval}")
+        else
+          STDERR.puts("full evaluation: value=#{eval}")
+        end
       end
     end
     if answer[0] == 'pass'
-      {'pass' => {'punter' => pid}}
-    else
+      return {'pass' => {'punter' => pid}}, eval
+    end
+    if answer[0] == 'claim'
       s = answer[1].to_i
       t = answer[2].to_i
-      STDERR.puts('claiming ' + [s, t] * ' ')
-      {'claim' => {'punter' => pid, 'source' => s, 'target' => t}}
+      return {'claim' => {'punter' => pid, 'source' => s, 'target' => t}}, eval
+    end
+    if answer[0] == 'tbl'
+      STDERR.puts("Got tbl (tbl size = #{answer[1].size})")
+      return answer[1]
     end
   end
 end
