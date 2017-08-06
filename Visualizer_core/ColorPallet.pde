@@ -3,7 +3,7 @@ public class ColorPallet{
   int[] colors;
   ColorPallet() {
     colors = new int[]{
-      #B21620, //red
+      #FF2121, //red
       #5221DB, //blue
       #20D333, //green
       #FEFF29, //yellow
