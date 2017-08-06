@@ -64,6 +64,7 @@ class Server(object):
         for punter in self.punters:
             punter.score = self.map.calc_score(punter)
             scores.append({"punter": punter.id, "score": punter.score})
+        self.log(scores)
         for punter in self.punters:
             self.open_proc(punter)
             self.hand_shake(punter)
