@@ -10,7 +10,6 @@
 #include "./ai/greedy.hpp"
 
 using namespace std;
-const int inf = 1e8;
 
 
 int main(void) {

@@ -11,4 +11,7 @@ typedef std::vector<ll> VL;
 typedef std::pair<int, int> PI;
 typedef std::pair<PI, int> PPII;
 
+const int inf = 1e8;
+
+
 #endif
