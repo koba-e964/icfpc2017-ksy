@@ -4,8 +4,6 @@
 #include "../UnionFind.cpp"
 using namespace std;
 
-const int inf = 1e8;
-
 int eval_board(int n, const vector<PPII> &edges, int s1, int s2, int mbits, vector<VI> &dist) {
   int m = edges.size();
   UnionFind uf1(n), uf2(n);

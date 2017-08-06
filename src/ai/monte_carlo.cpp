@@ -1,11 +1,12 @@
 #include <set>
-#include "./greedy.hpp"
 #include "./eval.hpp"
+#include "./monte_carlo.hpp"
+#include "../UnionFind.cpp"
 
 using namespace std;
 
 
-std::pair<int, int> greedy_solve(int n, const std::vector<PPII> &edges,
+std::pair<int, int> monte_carlo_solve(int n, const std::vector<PPII> &edges,
 				int pid, int np,
 			        const std::vector<int> &mines,
 				int remain, int &eval) {
