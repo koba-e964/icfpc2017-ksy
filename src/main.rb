@@ -48,7 +48,7 @@ if mode == 'run'
       end
       edges << [e['source'], e['target'], col]
     end
-    io = IO.popen('src/core', 'r+')
+    io = IO.popen(File.expand_path(File.dirname($0)) + '/core', 'r+')
     io.puts("#{n} #{m} #{k} #{pid} #{np} #{rem}")
     for i in 0 ... m
       io.puts(edges[i].join(' '))
