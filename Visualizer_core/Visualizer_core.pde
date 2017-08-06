@@ -1,3 +1,5 @@
+Site s, t;
+
 void setup(){
   background(255);
   size(640, 480);
@@ -8,13 +10,22 @@ void setup(){
   for(String val:lines){
     println(val);
   }
+  
+  //Test section for implemented classes
+  s = new Site(1, true, 20.0, 30.0);
+  t  =new Site(2, false, 50.0, 100.0);
+  //Site c_site;
+  //c_site = site.clone();
+  
+  //println(c_site.posX);
+  //println(site.posX);
+  //c_site.posX = 10.0;
+  //println(c_site.posX);
+  //println(site.posX);
 }
 
 void draw(){
-  if(mousePressed){
-    fill(0);
-  } else {
-    fill(255);
-  }
-  ellipse(mouseX, mouseY, 80, 80);
+  s.drawPathToSite(t);
+  s.drawSite();
+  t.drawSite();
 }
