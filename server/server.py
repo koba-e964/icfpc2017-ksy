@@ -14,6 +14,7 @@ class Server(object):
         self.n = len(self.punters)
         self.moves = self.init_moves()
         self.map = Map(mapfile)
+        self.evals = []
 
     def init_punters(self, scripts):
         punters = []
@@ -30,56 +31,74 @@ class Server(object):
     def run(self):
         self.phase = "SETUP"
         for punter in self.punters:
-            self.open_proc(punter)
-            self.hand_shake(punter)
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
-            packet = self.make_packet(msg)
-            out, err = punter.proc.communicate(packet)
-            # self.log("setup reply from punter %d" % (punter.id))
-            # self.log(out)
-            reply = json.loads(out.split(":", 1)[1])
+
+            reply, err = self.communicate(punter, msg, 10.0)
             punter.state = reply["state"]
+
+            self.log("setup phase of punter %d:" % (punter.id))
+            self.log(err)
 
         self.phase = "GAMEPLAY"
         for i in range(self.map.r):
             punter = self.punters[i % self.n]
-            self.open_proc(punter)
-            self.hand_shake(punter)
             msg = {"move": {"moves": self.moves[-self.n:]},
                    "state": punter.state}
-            packet = self.make_packet(msg)
-            out, err = punter.proc.communicate(packet)
-            # self.log("game play reply from punter %d in %d turn" % (punter.id, i))
-            # self.log(out)
-            reply = json.loads(out.split(":", 1)[1])
+
+            reply, err = self.communicate(punter, msg, 1.0)
             punter.state = reply["state"]
-            del reply["state"]
-            self.log(reply)
+
+            if "eval" in reply["state"]:
+                self.evals.append({"punter": punter.id, "eval": reply["state"]["eval"]})
             if "claim" in reply:
                 self.map.update_graph(reply["claim"], punter)
+            del reply["state"]
             self.moves.append(reply)
 
+            self.log("gameplay phase of punter %d (turn %d):" % (punter.id, i))
+            self.log(err)
+
         self.phase = "SCORING"
+        scores = self.cacl_scores()
+        for punter in self.punters:
+            msg = {"stop": {"moves": self.moves, "scores": scores},
+                   "state": punter.state}
+
+            reply, err = self.communicate(punter, msg, 20.0)
+
+            self.log("scoring phase of punter %d:" % (punter.id))
+            self.log(err)
+
+        self.log("result:")
+        self.log(scores)
+
+        log = {"map": self.map.map,
+                "moves": self.moves[2:],
+                "evals": self.evals}
+        print(json.dumps(log, separators=(',', ':')))
+
+    def communicate(self, punter, msg, timeout):
+        self.open_proc(punter)
+        self.hand_shake(punter)
+
+        packet = self.make_packet(msg)
+        out, err = punter.proc.communicate(packet, timeout = timeout)
+        reply = {}
+        if len(out) > 0:
+            reply = json.loads(out.split(":", 1)[1])
+
+        return (reply, err)
+
+    def cacl_scores(self):
         scores = []
         for punter in self.punters:
             punter.score = self.map.calc_score(punter)
             scores.append({"punter": punter.id, "score": punter.score})
-        self.log(scores)
-        for punter in self.punters:
-            self.open_proc(punter)
-            self.hand_shake(punter)
-            msg = {"stop": {"moves": self.moves, "scores": scores},
-                   "state": punter.state}
-            packet = self.make_packet(msg)
-            out, err = punter.proc.communicate(packet)
-
-        log = {"map": self.map.map,
-                "moves": self.moves[2:],
-                "scores": scores}
-        print(json.dumps(log, separators=(',', ':')))
+        return scores
 
     def open_proc(self, punter):
-        punter.proc = Popen("ruby " + punter.script, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        punter.proc = Popen(punter.script, shell=True,
+                            stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
