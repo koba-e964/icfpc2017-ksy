@@ -1,31 +1,34 @@
-Site s, t;
+Site s, t, u, v;
+Site[] sites;
+int[][] rivers;
+
+Map testMap;
 
 void setup(){
   background(255);
   size(640, 480);
 
   //file load test
-  String lines[];
-  lines = loadStrings("text.txt");
-  for(String val:lines){
-    println(val);
-  }
+  //String lines[];
+  //lines = loadStrings("text.txt");
+  //for(String val:lines){
+  //  println(val);
+  //}
   
   //Test section for implemented classes
-  s = new Site(1, true, 20.0, 30.0);
-  t  =new Site(2, false, 50.0, 100.0);
-  //Site c_site;
-  //c_site = site.clone();
+  s = new Site(0, true, 20.0, 30.0);
+  t = new Site(1, false, 50.0, 100.0);
+  u = new Site(2, false, 100.0, 30.0); 
+  v = new Site(3, true, 75.0, 80.0);
+
+  sites = new Site[]{s,t,u,v};
   
-  //println(c_site.posX);
-  //println(site.posX);
-  //c_site.posX = 10.0;
-  //println(c_site.posX);
-  //println(site.posX);
+  rivers = new int[][]{{1,2,-1},{2,3,1},{3,0,2},{0,1,0}};
+  
+  testMap = new Map(sites, rivers);
 }
 
 void draw(){
-  s.drawPathToSite(t);
-  s.drawSite();
-  t.drawSite();
+  testMap.drawRivers();
+  testMap.drawSites();
 }
