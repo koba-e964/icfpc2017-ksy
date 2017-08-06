@@ -1,13 +1,20 @@
-Site[] sites;
-int[][] rivers;
-int[][] moves;
 Visualizer v;
+float centerX, centerY;
 
 void setup(){
   background(255);
-  size(640, 480);
-    
-  JSONObject gameJSON = loadJSONObject("sample_log.json");
+  size(1280, 720);
+
+  Site[] sites;
+  int[][] rivers;
+  int[][] moves;
+  
+  centerX = 0.0;
+  centerY = 0.0;
+
+  int scaler = 5;
+
+  JSONObject gameJSON = loadJSONObject("sample_nara.json");
 
   JSONObject mapJSON = gameJSON.getJSONObject("map");
   JSONArray moveJSON = gameJSON.getJSONArray("moves");
@@ -20,9 +27,12 @@ void setup(){
   for(int i = 0; i < siteArray.size(); i++){
     JSONObject siteJSON = siteArray.getJSONObject(i);
     int id = siteJSON.getInt("id");
-    float x = siteJSON.getFloat("x") * 100;
-    float y = siteJSON.getFloat("y") * 100;
+    float x = siteJSON.getFloat("x") * scaler;
+    float y = siteJSON.getFloat("y") * scaler;
     sites[i] = new Site(id, false, x, y);
+    
+    centerX += x / siteArray.size();
+    centerY += y / siteArray.size();
   }
   
   rivers = new int[riverArray.size()][];
@@ -70,9 +80,9 @@ void keyPressed(){
 
 void draw(){
   background(255);
-  translate(width/2, height/2);
+  translate(width/2 - centerX, height/2 - centerY);
   v.drawMap();
-  translate(-width/2, -height/2);
+  translate(-width/2 + centerX, -height/2 + centerY);
     
   fill(0);
   text(v.currentTurn(), mouseX+10, mouseY+20);
