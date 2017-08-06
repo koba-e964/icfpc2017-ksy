@@ -56,9 +56,9 @@ class Server(object):
             punter.state = reply["state"]
             if "eval" in reply["state"]:
                 self.evals.append({"punter": punter.id, "eval": reply["state"]["eval"]})
-            del reply["state"]
             if "claim" in reply:
                 self.map.update_graph(reply["claim"], punter)
+            del reply["state"]
             self.moves.append(reply)
 
         self.phase = "SCORING"
