@@ -54,6 +54,8 @@ class Server(object):
             self.log(err)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
+            if "eval" in reply["state"]:
+                self.evals.append({"punter": punter.id, "eval": reply["state"]["eval"]})
             del reply["state"]
             if "claim" in reply:
                 self.map.update_graph(reply["claim"], punter)
@@ -76,7 +78,7 @@ class Server(object):
 
         log = {"map": self.map.map,
                 "moves": self.moves[2:],
-                "scores": scores}
+                "evals": self.evals}
         print(json.dumps(log, separators=(',', ':')))
 
     def cacl_scores(self):
