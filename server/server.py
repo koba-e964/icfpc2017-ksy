@@ -31,29 +31,25 @@ class Server(object):
     def run(self):
         self.phase = "SETUP"
         for punter in self.punters:
-            self.open_proc(punter)
-            self.hand_shake(punter)
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
-            packet = self.make_packet(msg)
-            out, err = punter.proc.communicate(packet)
-            self.log("setup phase of punter %d:" % (punter.id))
-            self.log(err)
+
+            out, err = self.communicate(punter, msg, 10.0)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
+
+            self.log("setup phase of punter %d:" % (punter.id))
+            self.log(err)
 
         self.phase = "GAMEPLAY"
         for i in range(self.map.r):
             punter = self.punters[i % self.n]
-            self.open_proc(punter)
-            self.hand_shake(punter)
             msg = {"move": {"moves": self.moves[-self.n:]},
                    "state": punter.state}
-            packet = self.make_packet(msg)
-            out, err = punter.proc.communicate(packet)
-            self.log("gameplay phase of punter %d (turn %d):" % (punter.id, i))
-            self.log(err)
+
+            out, err = self.communicate(punter, msg, 1.0)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
+
             if "eval" in reply["state"]:
                 self.evals.append({"punter": punter.id, "eval": reply["state"]["eval"]})
             if "claim" in reply:
@@ -61,15 +57,17 @@ class Server(object):
             del reply["state"]
             self.moves.append(reply)
 
+            self.log("gameplay phase of punter %d (turn %d):" % (punter.id, i))
+            self.log(err)
+
         self.phase = "SCORING"
         scores = self.cacl_scores()
         for punter in self.punters:
-            self.open_proc(punter)
-            self.hand_shake(punter)
             msg = {"stop": {"moves": self.moves, "scores": scores},
                    "state": punter.state}
-            packet = self.make_packet(msg)
-            out, err = punter.proc.communicate(packet)
+
+            out, err = self.communicate(punter, msg, 20.0)
+
             self.log("scoring phase of punter %d:" % (punter.id))
             self.log(err)
 
@@ -80,6 +78,15 @@ class Server(object):
                 "moves": self.moves[2:],
                 "evals": self.evals}
         print(json.dumps(log, separators=(',', ':')))
+
+    def communicate(self, punter, msg, timeout = 20.0):
+        self.open_proc(punter)
+        self.hand_shake(punter)
+
+        packet = self.make_packet(msg)
+        out, err = punter.proc.communicate(packet, timeout = timeout)
+
+        return (out, err)
 
     def cacl_scores(self):
         scores = []
