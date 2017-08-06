@@ -50,7 +50,7 @@ class Server(object):
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
             # self.log("game play reply from punter %d in %d turn" % (punter.id, i))
-            # self.log(out)
+            self.log(out)
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
             del reply["state"]

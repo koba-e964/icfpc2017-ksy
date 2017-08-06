@@ -1,39 +1,15 @@
 #include <algorithm>
-#include <bitset>
 #include <cassert>
-#include <cctype>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <deque>
-#include <functional>
-#include <iomanip>
 #include <iostream>
-#include <list>
-#include <map>
-#include <numeric>
-#include <queue>
-#include <set>
-#include <sstream>
-#include <stack>
 #include <string>
-#include <utility>
 #include <vector>
+#include "./common.hpp"
 #include "./tbl_io.hpp"
 #include "./UnionFind.cpp"
 #include "./ai/exact.hpp"
-
-#define REP(i,s,n) for(int i=(int)(s);i<(int)(n);i++)
-
+#include "./ai/greedy.hpp"
 
 using namespace std;
-typedef long long int ll;
-typedef vector<int> VI;
-typedef vector<ll> VL;
-typedef pair<int, int> PI;
-typedef pair<PI, int> PPII;
 const int inf = 1e8;
 
 
@@ -54,7 +30,6 @@ int main(void) {
   }
   string mode;
   cin >> mode;
-  cerr << "Input read (C++)" << endl;
   if (np == 2 && m <= 12) {
     int mbits = 0;
     REP(i, 0, k) {
@@ -103,12 +78,18 @@ int main(void) {
     }
     return 0;
   }
-  REP(i, 0, m) {
-    if (edges[i].second == -1) {
-      cout << "claim " << edges[i].first.first << " " << edges[i].first.second
-	   << endl;
-      return 0;
-    }
+  if (mode == "setup") {
+    // Do nothing
+    cout << "tbl bigCase" << endl;
+    return 0;
   }
-  cout << "pass" << endl;
+  string tbl;
+  cin >> tbl;
+  int value;
+  PI move = greedy_solve(n, edges, pid, np, mines, rem, value);
+  if (move.first == -1) {
+    cout << "pass" << endl;
+  } else {
+    cout << "claim " << move.first << " " << move.second << endl;
+  }
 }

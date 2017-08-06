@@ -3,7 +3,6 @@
 #include "./exact.hpp"
 #include "../UnionFind.cpp"
 using namespace std;
-#define REP(i,s,n) for(int i=(int)(s);i<(int)(n);i++)
 
 const int inf = 1e8;
 
