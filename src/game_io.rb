@@ -39,27 +39,33 @@ class GameIO
       # Setup
       pid = income['punter'].to_i
       income['claimed'] = []
-      income['rem'] = income['map']['rivers'].size - pid
+      income['rem'] = rem = income['map']['rivers'].size - pid
+      n = income['punters']
+      map = income['map']
+      claimed = []
+      state_tbl = @ai.move(pid, n, map, claimed, rem, true)
+      income['tbl'] = state_tbl
       self.send({"ready" => pid, 'state' => income})
       return
     end
     if income['move']
       # Gameplay
       state = income['state']
-      prev = income
       pid = state['punter']
       n = state['punters']
       map = state['map']
       rem = state['rem']
       claimed = state['claimed']
+      tbl = state['tbl']
       for mv in income['move']['moves']
         if mv['claim']
           cl = mv['claim']
           claimed << [cl['punter'], cl['source'], cl['target']]
         end
       end
-      move = @ai.move(pid, n, map, claimed, rem)
+      move, eval = @ai.move(pid, n, map, claimed, rem, false, tbl)
       state['rem'] = rem - n
+      state['eval'] = eval
       move['state'] = state
       self.send(move)
       return
