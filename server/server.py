@@ -33,8 +33,7 @@ class Server(object):
         for punter in self.punters:
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
 
-            out, err = self.communicate(punter, msg, 10.0)
-            reply = json.loads(out.split(":", 1)[1])
+            reply, err = self.communicate(punter, msg, 10.0)
             punter.state = reply["state"]
 
             self.log("setup phase of punter %d:" % (punter.id))
@@ -46,8 +45,7 @@ class Server(object):
             msg = {"move": {"moves": self.moves[-self.n:]},
                    "state": punter.state}
 
-            out, err = self.communicate(punter, msg, 1.0)
-            reply = json.loads(out.split(":", 1)[1])
+            reply, err = self.communicate(punter, msg, 1.0)
             punter.state = reply["state"]
 
             if "eval" in reply["state"]:
@@ -66,7 +64,7 @@ class Server(object):
             msg = {"stop": {"moves": self.moves, "scores": scores},
                    "state": punter.state}
 
-            out, err = self.communicate(punter, msg, 20.0)
+            reply, err = self.communicate(punter, msg, 20.0)
 
             self.log("scoring phase of punter %d:" % (punter.id))
             self.log(err)
@@ -79,14 +77,17 @@ class Server(object):
                 "evals": self.evals}
         print(json.dumps(log, separators=(',', ':')))
 
-    def communicate(self, punter, msg, timeout = 20.0):
+    def communicate(self, punter, msg, timeout):
         self.open_proc(punter)
         self.hand_shake(punter)
 
         packet = self.make_packet(msg)
         out, err = punter.proc.communicate(packet, timeout = timeout)
+        reply = {}
+        if len(out) > 0:
+            reply = json.loads(out.split(":", 1)[1])
 
-        return (out, err)
+        return (reply, err)
 
     def cacl_scores(self):
         scores = []
