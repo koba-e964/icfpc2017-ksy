@@ -89,7 +89,8 @@ class Server(object):
         return scores
 
     def open_proc(self, punter):
-        punter.proc = Popen("ruby " + punter.script, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        punter.proc = Popen(punter.script, shell=True,
+                            stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     def hand_shake(self, punter):
         reply = self.rcv_json(punter.proc)
