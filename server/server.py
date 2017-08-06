@@ -54,7 +54,7 @@ class Server(object):
             reply = json.loads(out.split(":", 1)[1])
             punter.state = reply["state"]
             del reply["state"]
-            print(reply)
+            self.log(reply)
             if "claim" in reply:
                 self.map.update_graph(reply["claim"], punter)
             self.moves.append(reply)
@@ -72,7 +72,10 @@ class Server(object):
             packet = self.make_packet(msg)
             out, err = punter.proc.communicate(packet)
 
-        print(scores)
+        log = {"map": self.map.map,
+                "moves": self.moves[2:],
+                "scores": scores}
+        print(json.dumps(log, separators=(',', ':')))
 
     def open_proc(self, punter):
         punter.proc = Popen("ruby " + punter.script, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
@@ -104,7 +107,6 @@ class Server(object):
     @staticmethod
     def log(msg):
         print(msg, file=sys.stderr)
-
 
 mapfile = sys.argv[1]
 names = sys.argv[2:]
