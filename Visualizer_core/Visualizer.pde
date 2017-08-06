@@ -36,7 +36,7 @@ public class Visualizer{
     }
     if(this.moves[cur][0] != -1){
       this.curRiverId = this.G.findRiver(this.moves[this.cur][1], this.moves[this.cur][2]);
-      this.G.setOwner(this.curRiverId, moves[cur][0]);
+      this.G.setOwner(this.curRiverId, this.moves[cur][0]);
     }
     this.cur++;
   }
