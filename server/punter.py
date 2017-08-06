@@ -7,6 +7,3 @@ class Punter(object):
         self.script = script
         self.proc = None
         self.score = 0
-
-    def open_proc(self):
-        self.proc = Popen("ruby " + self.script, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
