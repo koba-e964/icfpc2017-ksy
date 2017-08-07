@@ -8,6 +8,7 @@ float globalScale = 1.0;
 float prevX = 0.0, prevY = 0.0;
 float draggedX = 0.0, draggedY = 0.0;
 boolean isReleased = true;
+boolean showBox = true;
 
 void setup(){
   background(255);
@@ -119,6 +120,12 @@ void keyPressed(){
   }
 }
 
+void mousePressed(){
+  if(mouseButton == LEFT){
+    showBox = !showBox;
+  }
+}
+
 void mouseDragged(){
   if(isReleased){
     isReleased = false;
@@ -145,5 +152,7 @@ void draw(){
   translate(-centerX - draggedX, -centerY - draggedY);
   scale(1.0 / globalScale);
 
-  box.drawStatusBox();
+  if(showBox){
+    box.drawStatusBox();
+  }
 }
