@@ -4,6 +4,8 @@ float centerX = 0.0, centerY = 0.0;
 float lengthX, lengthY;
 float globalScale = 1.0;
 
+ColorPallet bgColor;
+
 //mouse control
 float prevX = 0.0, prevY = 0.0;
 float draggedX = 0.0, draggedY = 0.0;
@@ -13,6 +15,8 @@ boolean showBox = true;
 void setup(){
   background(255);
   size(1280, 720);
+  
+  bgColor = new ColorPallet();
 
   Site[] sites;
   int[][] rivers;
@@ -22,7 +26,7 @@ void setup(){
   
   float minX = 100000000.0, maxX = -100000000.0, minY = 10000000.0, maxY = -10000000.0;
 
-  JSONObject gameJSON = loadJSONObject("../log/sample_with_eval.json");
+  JSONObject gameJSON = loadJSONObject("same.json");
 
   JSONObject mapJSON = gameJSON.getJSONObject("map");
   JSONArray moveJSON = gameJSON.getJSONArray("moves");
@@ -145,7 +149,7 @@ void mouseReleased(){
 }
 
 void draw(){
-  background(255);
+  background(bgColor.bgColor);
   scale(globalScale);
   translate(centerX + draggedX, centerY + draggedY);
   v.drawMap();
