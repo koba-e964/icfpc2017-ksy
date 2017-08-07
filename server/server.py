@@ -48,10 +48,14 @@ class Server(object):
             reply, err, t = self.communicate(punter, msg, 1.0)
             punter.state = reply["state"]
 
+            ev = 0
             if "eval" in reply["state"]:
-                self.evals.append({"punter": punter.id, "eval": reply["state"]["eval"]})
+                ev = reply["state"]["eval"]
+            self.evals.append({"punter": punter.id, "eval": ev})
+
             if "claim" in reply:
                 self.map.update_graph(reply["claim"], punter)
+
             del reply["state"]
             self.moves.append(reply)
 
@@ -75,7 +79,8 @@ class Server(object):
         log = {"map": self.map.map,
                 "punters": self.n,
                 "moves": self.moves[self.n:],
-                "evals": self.evals}
+                "evals": self.evals,
+                "scores": scores}
         return log
 
     def communicate(self, punter, msg, timeout):
