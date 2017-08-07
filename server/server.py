@@ -73,6 +73,7 @@ class Server(object):
         self.log(scores)
 
         log = {"map": self.map.map,
+                "punters": self.n,
                 "moves": self.moves[self.n:],
                 "evals": self.evals}
         print(json.dumps(log, separators=(',', ':')))
