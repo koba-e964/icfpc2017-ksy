@@ -5,7 +5,6 @@
 #include <vector>
 #include "./common.hpp"
 #include "./tbl_io.hpp"
-#include "./UnionFind.cpp"
 #include "./ai/exact.hpp"
 #include "./ai/greedy.hpp"
 
