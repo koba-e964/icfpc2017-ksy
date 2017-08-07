@@ -10,6 +10,7 @@
 #include "./ai/greedy.hpp"
 #include "./ai/monte_carlo.hpp"
 #include "./ai/mine_connect.hpp"
+#include "./ai/two_player_minmax.hpp"
 
 using namespace std;
 
@@ -92,6 +93,7 @@ int main(void) {
   string ai_kind;
   cin >> ai_kind;
   int value;
+  int turns = 1;
   PI move;
   if (ai_kind == "greedy") {
     move = greedy_solve(n, edges, pid, np, mines, rem, value);
@@ -99,10 +101,12 @@ int main(void) {
     move = monte_carlo_solve(n, edges, pid, np, mines, rem, value);
   } else if (ai_kind == "mine_connect") {
     move = mine_connect_solve(n, edges, pid, np, mines, rem, value);
+  } else if (ai_kind == "two_player_minmax") {
+    move = two_player_minmax_solve(n, edges, pid, np, mines, rem, turns, value);
   } else {
     exit(1);
   }
-  cout << "info eval 1 " << value << endl;
+  cout << "info eval " << turns << " " << value << endl;
   if (move.first == -1) {
     cout << "pass" << endl;
   } else {

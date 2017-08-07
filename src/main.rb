@@ -4,7 +4,7 @@ require_relative './game_io.rb'
 class AI
   # ai_kind = 'greedy' or 'monte_carlo'
   def initialize(ai_kind)
-    available_ais = ['greedy', 'monte_carlo', 'mine_connect']
+    available_ais = ['greedy', 'monte_carlo', 'mine_connect', 'two_player_minmax']
     if !available_ais.include?(ai_kind)
       raise Exception::new('AI type ' + ai_kind + 'not available')
     end
