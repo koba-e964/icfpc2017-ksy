@@ -76,7 +76,7 @@ class Server(object):
                 "punters": self.n,
                 "moves": self.moves[self.n:],
                 "evals": self.evals}
-        print(json.dumps(log, separators=(',', ':')))
+        return log
 
     def communicate(self, punter, msg, timeout):
         self.open_proc(punter)
@@ -131,8 +131,10 @@ class Server(object):
     def log(msg):
         print(msg, file=sys.stderr)
 
-mapfile = sys.argv[1]
-commands = sys.argv[2:]
+if __name__ == "__main__":
+    mapfile = sys.argv[1]
+    commands = sys.argv[2:]
 
-server = Server(mapfile, commands)
-server.run()
+    server = Server(mapfile, commands)
+    log = server.run()
+    print(json.dumps(log, separators=(',', ':')))
