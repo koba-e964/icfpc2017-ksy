@@ -28,7 +28,7 @@ class Server(object):
             moves.append({"pass": {"punter": punter.id}})
         return moves
 
-    def run_game(self):
+    def run(self):
         self.phase = "SETUP"
         for punter in self.punters:
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
@@ -131,9 +131,8 @@ class Server(object):
     def log(msg):
         print(msg, file=sys.stderr)
 
-rounds = int(sys.argv[1])
-mapfile = sys.argv[2]
-commands = sys.argv[3:]
+mapfile = sys.argv[1]
+commands = sys.argv[2:]
 
 server = Server(mapfile, commands)
-server.run_game()
+server.run()
