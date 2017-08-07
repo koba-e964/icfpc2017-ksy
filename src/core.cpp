@@ -102,6 +102,7 @@ int main(void) {
   } else {
     exit(1);
   }
+  cout << "info eval 1 " << value << endl;
   if (move.first == -1) {
     cout << "pass" << endl;
   } else {
