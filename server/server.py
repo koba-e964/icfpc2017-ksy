@@ -8,13 +8,14 @@ from queue import Queue
 from subprocess import Popen, PIPE
 
 class Server(object):
-    def __init__(self, mapfile, commands):
+    def __init__(self, mapfile, commands, debug = True):
         self.phase = "INIT"
         self.punters = self.init_punters(commands)
         self.n = len(self.punters)
         self.moves = self.init_moves()
         self.map = Map(mapfile)
         self.evals = []
+        self.debug = debug
 
     def init_punters(self, commands):
         punters = []
@@ -132,9 +133,9 @@ class Server(object):
         l = len(s)
         return str(l) + ":" + s
 
-    @staticmethod
-    def log(msg):
-        print(msg, file=sys.stderr)
+    def log(self, msg):
+        if self.debug:
+            print(msg, file=sys.stderr)
 
 if __name__ == "__main__":
     mapfile = sys.argv[1]
