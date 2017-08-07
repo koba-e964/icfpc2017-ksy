@@ -27,7 +27,7 @@ void setup(){
   JSONObject mapJSON = gameJSON.getJSONObject("map");
   JSONArray moveJSON = gameJSON.getJSONArray("moves");
   JSONArray evalJSON = gameJSON.getJSONArray("evals");
-  playerNum = 2;//gameJSON.getInt("punters");
+  playerNum = gameJSON.getInt("punters");
   
   JSONArray siteArray = mapJSON.getJSONArray("sites");
   JSONArray riverArray = mapJSON.getJSONArray("rivers");

@@ -5,6 +5,8 @@ public class StatusOnMouse {
   int playerNum;
   int maxTextLength = 6;
   Visualizer v;
+  float dx = 10.0;
+  float dy = 20.0;
   
   public StatusOnMouse(int playerNum, int tSize, float merginX, float merginY, Visualizer v){
     this.playerNum = playerNum;
@@ -31,14 +33,15 @@ public class StatusOnMouse {
     fill(255);
     strokeWeight(1);
     stroke(0);
-    rect(mouseX+10, mouseY+20, lengthX, lengthY); // mouse+10, mouseY+20 are magic numbers
+    rect(mouseX+dx, mouseY+dy, lengthX, lengthY); // mouse+10, mouseY+20 are magic numbers
   
     fill(0);
     textSize(this.tSize);
-    text("Turn:" + this.v.currentTurn(), mouseX+10+this.merginX, mouseY+20+this.merginY+this.tSize);
+    textAlign(CENTER);
+    text("Turn:" + this.v.currentTurn(), mouseX+dx+lengthX/2, mouseY+dy+this.merginY+this.tSize);
     
     for(int i = 0; i < this.playerNum; i++){
-      text("" + i + ":" + this.v.evals[this.v.cur][i], mouseX+10+this.merginX, mouseY+20+this.merginY+(i+1)*this.tSize+this.tSize);
+      text("" + i + ":" + this.v.evals[this.v.cur][i], mouseX+dx+lengthX/2, mouseY+dy+this.merginY+(i+1)*this.tSize+this.tSize);
     }
   }
 }
