@@ -4,7 +4,7 @@ require_relative './game_io.rb'
 class AI
   # ai_kind = 'greedy' or 'monte_carlo'
   def initialize(ai_kind)
-    available_ais = ['greedy', 'monte_carlo', 'mine_connect']
+    available_ais = ['greedy', 'monte_carlo', 'mine_connect', 'two_player_minmax', 'hybrid']
     if !available_ais.include?(ai_kind)
       raise Exception::new('AI type ' + ai_kind + 'not available')
     end
@@ -73,12 +73,23 @@ ai_kind
       mine_ids << (mines[i]).to_s
     end
     io.puts(mine_ids.join(' '))
+    ai_kind = @ai_kind
+    if ai_kind == 'hybrid'
+      # Choose AI type by np, size, and so on
+      if np == 2
+        ai_kind = 'two_player_minmax'
+      elsif np >= 4
+        ai_kind = 'mine_connect'
+      else
+        ai_kind = 'greedy'
+      end
+    end
     if setup
       io.puts('setup')
     else
       io.puts('run')
       io.puts(tbl)
-      io.puts(@ai_kind)
+      io.puts(ai_kind)
     end
     io.close_write
     eval = 0
@@ -114,6 +125,6 @@ ai_kind
 end
 
 
-ai_kind = ARGV[0] ? ARGV[0] : 'greedy'
+ai_kind = ARGV[0] ? ARGV[0] : 'hybrid'
 game_io = GameIO::new(AI::new(ai_kind))
 game_io.run()

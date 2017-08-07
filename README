@@ -1,3 +1,6 @@
-Hiroki Kobayashi
-Ryo Sasaki
-Wataru Yahiro
+Members:
+ Hiroki Kobayashi
+ Ryo Sasaki
+ Wataru Yahiro
+
+./punter needs file system access (read-only) because it invokes Ruby scripts and a binary executable.
