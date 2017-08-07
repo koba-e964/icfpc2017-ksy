@@ -8,18 +8,19 @@ from queue import Queue
 from subprocess import Popen, PIPE
 
 class Server(object):
-    def __init__(self, mapfile, scripts):
+    def __init__(self, mapfile, commands, debug = True):
         self.phase = "INIT"
-        self.punters = self.init_punters(scripts)
+        self.punters = self.init_punters(commands)
         self.n = len(self.punters)
         self.moves = self.init_moves()
         self.map = Map(mapfile)
         self.evals = []
+        self.debug = debug
 
-    def init_punters(self, scripts):
+    def init_punters(self, commands):
         punters = []
-        for i in range(len(scripts)):
-            punters.append(Punter(i, scripts[i]))
+        for i in range(len(commands)):
+            punters.append(Punter(i, commands[i]))
         return punters
 
     def init_moves(self):
@@ -48,10 +49,14 @@ class Server(object):
             reply, err, t = self.communicate(punter, msg, 1.0)
             punter.state = reply["state"]
 
+            ev = 0
             if "eval" in reply["state"]:
-                self.evals.append({"punter": punter.id, "eval": reply["state"]["eval"]})
+                ev = reply["state"]["eval"]
+            self.evals.append({"punter": punter.id, "eval": ev})
+
             if "claim" in reply:
                 self.map.update_graph(reply["claim"], punter)
+
             del reply["state"]
             self.moves.append(reply)
 
@@ -75,8 +80,9 @@ class Server(object):
         log = {"map": self.map.map,
                 "punters": self.n,
                 "moves": self.moves[self.n:],
-                "evals": self.evals}
-        print(json.dumps(log, separators=(',', ':')))
+                "evals": self.evals,
+                "scores": scores}
+        return log
 
     def communicate(self, punter, msg, timeout):
         self.open_proc(punter)
@@ -100,7 +106,7 @@ class Server(object):
         return scores
 
     def open_proc(self, punter):
-        punter.proc = Popen(punter.script, shell=True,
+        punter.proc = Popen(punter.command, shell=True,
                             stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     def hand_shake(self, punter):
@@ -127,12 +133,14 @@ class Server(object):
         l = len(s)
         return str(l) + ":" + s
 
-    @staticmethod
-    def log(msg):
-        print(msg, file=sys.stderr)
+    def log(self, msg):
+        if self.debug:
+            print(msg, file=sys.stderr)
 
-mapfile = sys.argv[1]
-names = sys.argv[2:]
+if __name__ == "__main__":
+    mapfile = sys.argv[1]
+    commands = sys.argv[2:]
 
-server = Server(mapfile, names)
-server.run()
+    server = Server(mapfile, commands)
+    log = server.run()
+    print(json.dumps(log, separators=(',', ':')))
