@@ -3,10 +3,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdlib>
 #include "./common.hpp"
 #include "./tbl_io.hpp"
 #include "./ai/exact.hpp"
 #include "./ai/greedy.hpp"
+#include "./ai/monte_carlo.hpp"
 
 using namespace std;
 
@@ -16,6 +18,7 @@ int main(void) {
   cin.tie(0);
   int n, m, k, pid, np, rem;
   cin >> n >> m >> k >> pid >> np >> rem;
+  srand(time(0));
   vector<PPII> edges(m);
   REP(i, 0, m) {
     int s, t, c;
@@ -53,6 +56,8 @@ int main(void) {
     }
     string tbl;
     cin >> tbl;
+    string ai_kind;
+    cin >> ai_kind;
     VI pre_dp = decode_tbl(tbl);
     int pos = 0;
     VI dp(1 << (2 * m), -inf);
@@ -83,8 +88,17 @@ int main(void) {
   }
   string tbl;
   cin >> tbl;
+  string ai_kind;
+  cin >> ai_kind;
   int value;
-  PI move = greedy_solve(n, edges, pid, np, mines, rem, value);
+  PI move;
+  if (ai_kind == "greedy") {
+    move = greedy_solve(n, edges, pid, np, mines, rem, value);
+  } else if (ai_kind == "monte_carlo") {
+    move = monte_carlo_solve(n, edges, pid, np, mines, rem, value);
+  } else {
+    exit(1);
+  }
   if (move.first == -1) {
     cout << "pass" << endl;
   } else {

@@ -3,7 +3,8 @@
 
 using namespace std;
 
-int eval_board_myscore(int n, const vector<PPII> &edges, int pid, int np, set<int> mines, vector<VI> &dist) {
+int eval_board_myscore(int n, const vector<PPII> &edges, int pid, int np,
+		       const set<int> &mines, const vector<VI> &dist) {
   int m = edges.size();
   UnionFind uf(n);
   REP(i, 0, m) {
