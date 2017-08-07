@@ -1,8 +1,18 @@
 #!/usr/bin/ruby
 require_relative './game_io.rb'
 
-class PassAI
-  # returns [move, new_state]
+class AI
+  # ai_kind = 'greedy' or 'monte_carlo'
+  def initialize(ai_kind)
+    available_ais = ['greedy', 'monte_carlo']
+    if !available_ais.include?(ai_kind)
+      raise Exception::new('AI type ' + ai_kind + 'not available')
+    end
+    @ai_kind = ai_kind
+  end
+
+  # if setup returns tbl
+  # else returns [move, new_state]
   def move(pid, num_punters, map, claimed, rem, setup=false, tbl=nil)
     sites = map['sites']
     rivers = map['rivers']
@@ -15,6 +25,7 @@ s_1 t_1 c_1
 s_m t_m c_m (edges)
 a_1 ... a_k (mines)
 mode
+extra
 
 0 <= s_i, t_i < m
 -1 <= c_i < np (-1: not claimed)
@@ -22,10 +33,14 @@ mode
 
 
 if mode == 'state'
+  extra == ''
   The C++ program should return
   'tbl (state)'
   where state is a string representing a state (without spaces)
 if mode == 'run'
+  extra looks like:
+tbl
+ai_kind
   The C++ program should return
   'pass'
   or
@@ -63,6 +78,7 @@ if mode == 'run'
     else
       io.puts('run')
       io.puts(tbl)
+      io.puts(@ai_kind)
     end
     io.close_write
     eval = 0
@@ -98,5 +114,6 @@ if mode == 'run'
 end
 
 
-game_io = GameIO::new(PassAI::new())
+ai_kind = ARGV[0] ? ARGV[0] : 'greedy'
+game_io = GameIO::new(AI::new(ai_kind))
 game_io.run()

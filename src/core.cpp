@@ -56,6 +56,8 @@ int main(void) {
     }
     string tbl;
     cin >> tbl;
+    string ai_kind;
+    cin >> ai_kind;
     VI pre_dp = decode_tbl(tbl);
     int pos = 0;
     VI dp(1 << (2 * m), -inf);
@@ -86,8 +88,17 @@ int main(void) {
   }
   string tbl;
   cin >> tbl;
+  string ai_kind;
+  cin >> ai_kind;
   int value;
-  PI move = greedy_solve(n, edges, pid, np, mines, rem, value);
+  PI move;
+  if (ai_kind == "greedy") {
+    move = greedy_solve(n, edges, pid, np, mines, rem, value);
+  } else if (ai_kind == "monte_carlo") {
+    move = monte_carlo_solve(n, edges, pid, np, mines, rem, value);
+  } else {
+    exit(1);
+  }
   if (move.first == -1) {
     cout << "pass" << endl;
   } else {
