@@ -1,6 +1,7 @@
 public class ColorPallet{
   /* this class defines color for each player up to 16 */
   int[] colors;
+  int bgColor;
   ColorPallet() {
     colors = new int[]{
       #FF2121, //red
@@ -20,6 +21,7 @@ public class ColorPallet{
       #742370, //dark purple
       #CDCCCE, //gray
     };
+    bgColor = #FFF2F2;
   }
 
   public void setColor(int id){

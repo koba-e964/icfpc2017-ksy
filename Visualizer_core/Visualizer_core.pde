@@ -1,27 +1,37 @@
 Visualizer v;
+StatusOnMouse box;
 float centerX = 0.0, centerY = 0.0;
 float lengthX, lengthY;
 float globalScale = 1.0;
+
+ColorPallet bgColor;
 
 //mouse control
 float prevX = 0.0, prevY = 0.0;
 float draggedX = 0.0, draggedY = 0.0;
 boolean isReleased = true;
+boolean showBox = true;
 
 void setup(){
   background(255);
   size(1280, 720);
+  
+  bgColor = new ColorPallet();
 
   Site[] sites;
   int[][] rivers;
   int[][] moves;
+  int[][] evals;
+  int playerNum;
   
   float minX = 100000000.0, maxX = -100000000.0, minY = 10000000.0, maxY = -10000000.0;
 
-  JSONObject gameJSON = loadJSONObject("sample_nara.json");
+  JSONObject gameJSON = loadJSONObject("same.json");
 
   JSONObject mapJSON = gameJSON.getJSONObject("map");
   JSONArray moveJSON = gameJSON.getJSONArray("moves");
+  JSONArray evalJSON = gameJSON.getJSONArray("evals");
+  playerNum = gameJSON.getInt("punters");
   
   JSONArray siteArray = mapJSON.getJSONArray("sites");
   JSONArray riverArray = mapJSON.getJSONArray("rivers");
@@ -80,7 +90,18 @@ void setup(){
       moves[i] = new int[]{id, source, target};
     }
   }
-  v = new Visualizer(sites, rivers, moves);
+  
+  evals = new int[evalJSON.size()][];
+  for(int i = 0; i < evalJSON.size(); i++){
+    JSONObject eval = evalJSON.getJSONObject(i);
+    int id, score;
+    id = eval.getInt("punter");
+    score = eval.getInt("eval");
+    evals[i] = new int[]{id, score};
+  }
+  
+  v = new Visualizer(playerNum, sites, rivers, moves, evals);
+  box = new StatusOnMouse(playerNum, 16, 5.0, 5.0, v);
 }
 
 void keyPressed(){
@@ -103,6 +124,12 @@ void keyPressed(){
   }
 }
 
+void mousePressed(){
+  if(mouseButton == LEFT){
+    showBox = !showBox;
+  }
+}
+
 void mouseDragged(){
   if(isReleased){
     isReleased = false;
@@ -122,14 +149,14 @@ void mouseReleased(){
 }
 
 void draw(){
-  background(255);
+  background(bgColor.bgColor);
   scale(globalScale);
   translate(centerX + draggedX, centerY + draggedY);
   v.drawMap();
   translate(-centerX - draggedX, -centerY - draggedY);
-  
   scale(1.0 / globalScale);
-  fill(0);
-  textSize(16);
-  text("Turn:" + v.currentTurn(), mouseX+10, mouseY+20);
+
+  if(showBox){
+    box.drawStatusBox();
+  }
 }
