@@ -3,10 +3,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdlib>
 #include "./common.hpp"
 #include "./tbl_io.hpp"
 #include "./ai/exact.hpp"
 #include "./ai/greedy.hpp"
+#include "./ai/monte_carlo.hpp"
 
 using namespace std;
 
@@ -16,6 +18,7 @@ int main(void) {
   cin.tie(0);
   int n, m, k, pid, np, rem;
   cin >> n >> m >> k >> pid >> np >> rem;
+  srand(time(0));
   vector<PPII> edges(m);
   REP(i, 0, m) {
     int s, t, c;
