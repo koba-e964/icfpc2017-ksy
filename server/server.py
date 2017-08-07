@@ -33,10 +33,10 @@ class Server(object):
         for punter in self.punters:
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
 
-            reply, err = self.communicate(punter, msg, 10.0)
+            reply, err, t = self.communicate(punter, msg, 10.0)
             punter.state = reply["state"]
 
-            self.log("setup phase of punter %d:" % (punter.id))
+            self.log("setup phase of punter %d (%f sec):" % (punter.id, t))
             self.log(err)
 
         self.phase = "GAMEPLAY"
@@ -45,7 +45,7 @@ class Server(object):
             msg = {"move": {"moves": self.moves[-self.n:]},
                    "state": punter.state}
 
-            reply, err = self.communicate(punter, msg, 1.0)
+            reply, err, t = self.communicate(punter, msg, 1.0)
             punter.state = reply["state"]
 
             if "eval" in reply["state"]:
@@ -55,7 +55,7 @@ class Server(object):
             del reply["state"]
             self.moves.append(reply)
 
-            self.log("gameplay phase of punter %d (turn %d):" % (punter.id, i))
+            self.log("gameplay phase of punter %d, turn %d (%f sec):" % (punter.id, i + 1, t))
             self.log(err)
 
         self.phase = "SCORING"
@@ -64,7 +64,7 @@ class Server(object):
             msg = {"stop": {"moves": self.moves, "scores": scores},
                    "state": punter.state}
 
-            reply, err = self.communicate(punter, msg, 20.0)
+            reply, err, t = self.communicate(punter, msg, 20.0)
 
             self.log("scoring phase of punter %d:" % (punter.id))
             self.log(err)
@@ -83,12 +83,14 @@ class Server(object):
         self.hand_shake(punter)
 
         packet = self.make_packet(msg)
+        t = time.time()
         out, err = punter.proc.communicate(packet, timeout = timeout)
+        t = time.time() - t
         reply = {}
         if len(out) > 0:
             reply = json.loads(out.split(":", 1)[1])
 
-        return (reply, err)
+        return (reply, err, t)
 
     def cacl_scores(self):
         scores = []
