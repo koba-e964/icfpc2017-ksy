@@ -8,18 +8,18 @@ from queue import Queue
 from subprocess import Popen, PIPE
 
 class Server(object):
-    def __init__(self, mapfile, scripts):
+    def __init__(self, mapfile, commands):
         self.phase = "INIT"
-        self.punters = self.init_punters(scripts)
+        self.punters = self.init_punters(commands)
         self.n = len(self.punters)
         self.moves = self.init_moves()
         self.map = Map(mapfile)
         self.evals = []
 
-    def init_punters(self, scripts):
+    def init_punters(self, commands):
         punters = []
-        for i in range(len(scripts)):
-            punters.append(Punter(i, scripts[i]))
+        for i in range(len(commands)):
+            punters.append(Punter(i, commands[i]))
         return punters
 
     def init_moves(self):
@@ -28,7 +28,7 @@ class Server(object):
             moves.append({"pass": {"punter": punter.id}})
         return moves
 
-    def run(self):
+    def run_game(self):
         self.phase = "SETUP"
         for punter in self.punters:
             msg = {"punter": punter.id, "punters": self.n, "map": self.map.map}
@@ -100,7 +100,7 @@ class Server(object):
         return scores
 
     def open_proc(self, punter):
-        punter.proc = Popen(punter.script, shell=True,
+        punter.proc = Popen(punter.command, shell=True,
                             stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
     def hand_shake(self, punter):
@@ -131,8 +131,9 @@ class Server(object):
     def log(msg):
         print(msg, file=sys.stderr)
 
-mapfile = sys.argv[1]
-names = sys.argv[2:]
+rounds = int(sys.argv[1])
+mapfile = sys.argv[2]
+commands = sys.argv[3:]
 
-server = Server(mapfile, names)
-server.run()
+server = Server(mapfile, commands)
+server.run_game()
