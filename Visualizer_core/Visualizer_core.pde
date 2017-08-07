@@ -1,4 +1,5 @@
 Visualizer v;
+StatusOnMouse box;
 float centerX = 0.0, centerY = 0.0;
 float lengthX, lengthY;
 float globalScale = 1.0;
@@ -15,13 +16,17 @@ void setup(){
   Site[] sites;
   int[][] rivers;
   int[][] moves;
+  int[][] evals;
+  int playerNum;
   
   float minX = 100000000.0, maxX = -100000000.0, minY = 10000000.0, maxY = -10000000.0;
 
-  JSONObject gameJSON = loadJSONObject("sample_nara.json");
+  JSONObject gameJSON = loadJSONObject("../log/sample_with_eval.json");
 
   JSONObject mapJSON = gameJSON.getJSONObject("map");
   JSONArray moveJSON = gameJSON.getJSONArray("moves");
+  JSONArray evalJSON = gameJSON.getJSONArray("evals");
+  playerNum = 2;//gameJSON.getInt("punters");
   
   JSONArray siteArray = mapJSON.getJSONArray("sites");
   JSONArray riverArray = mapJSON.getJSONArray("rivers");
@@ -80,7 +85,18 @@ void setup(){
       moves[i] = new int[]{id, source, target};
     }
   }
-  v = new Visualizer(sites, rivers, moves);
+  
+  evals = new int[evalJSON.size()][];
+  for(int i = 0; i < evalJSON.size(); i++){
+    JSONObject eval = evalJSON.getJSONObject(i);
+    int id, score;
+    id = eval.getInt("punter");
+    score = eval.getInt("eval");
+    evals[i] = new int[]{id, score};
+  }
+  
+  v = new Visualizer(playerNum, sites, rivers, moves, evals);
+  box = new StatusOnMouse(playerNum, 16, 5.0, 5.0, v);
 }
 
 void keyPressed(){
@@ -127,9 +143,7 @@ void draw(){
   translate(centerX + draggedX, centerY + draggedY);
   v.drawMap();
   translate(-centerX - draggedX, -centerY - draggedY);
-  
   scale(1.0 / globalScale);
-  fill(0);
-  textSize(16);
-  text("Turn:" + v.currentTurn(), mouseX+10, mouseY+20);
+
+  box.drawStatusBox();
 }
