@@ -1,6 +1,6 @@
-CPPS = core.cpp tbl_io.cpp ai/exact.cpp ai/greedy.cpp ai/eval.cpp ai/monte_carlo.cpp
+CPPS = core.cpp tbl_io.cpp ai/exact.cpp ai/greedy.cpp ai/eval.cpp ai/monte_carlo.cpp ai/mine_connect.cpp
 OBJS = $(subst .cpp,.o, $(CPPS))
-HEADERS = tbl_io.hpp UnionFind.cpp ai/exact.hpp ai/greedy.hpp ai/eval.hpp ai/monte_carlo.hpp
+HEADERS = tbl_io.hpp UnionFind.cpp ai/exact.hpp ai/greedy.hpp ai/eval.hpp ai/monte_carlo.hpp ai/mine_connect.hpp
 core: $(OBJS)
 	c++ -o core $(OBJS)
 %.o: %.cpp $(HEADERS)

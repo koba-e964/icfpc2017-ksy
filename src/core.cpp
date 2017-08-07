@@ -9,6 +9,7 @@
 #include "./ai/exact.hpp"
 #include "./ai/greedy.hpp"
 #include "./ai/monte_carlo.hpp"
+#include "./ai/mine_connect.hpp"
 
 using namespace std;
 
@@ -96,6 +97,8 @@ int main(void) {
     move = greedy_solve(n, edges, pid, np, mines, rem, value);
   } else if (ai_kind == "monte_carlo") {
     move = monte_carlo_solve(n, edges, pid, np, mines, rem, value);
+  } else if (ai_kind == "mine_connect") {
+    move = mine_connect_solve(n, edges, pid, np, mines, rem, value);
   } else {
     exit(1);
   }
