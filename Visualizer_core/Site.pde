@@ -31,10 +31,10 @@ public class Site implements Cloneable{
     if(this.isMine){
       //debug this so that it shows the circle red
       fill(255, 0, 0);
-      r = 12.0;
+      r = 12.0f;
     } else {
       fill(255);
-      r = 5.0;
+      r = 5.0f;
     }
     ellipse(this.posX, this.posY, r, r);
   }

@@ -1,14 +1,14 @@
 Visualizer v;
 StatusOnMouse box;
-float centerX = 0.0, centerY = 0.0;
+float centerX = 0.0f, centerY = 0.0f;
 float lengthX, lengthY;
-float globalScale = 1.0;
+float globalScale = 1.0f;
 
 ColorPallet bgColor;
 
 //mouse control
-float prevX = 0.0, prevY = 0.0;
-float draggedX = 0.0, draggedY = 0.0;
+float prevX = 0.0f, prevY = 0.0f;
+float draggedX = 0.0f, draggedY = 0.0f;
 boolean isReleased = true;
 boolean showBox = true;
 
@@ -24,7 +24,7 @@ void setup(){
   int[][] evals;
   int playerNum;
   
-  float minX = 100000000.0, maxX = -100000000.0, minY = 10000000.0, maxY = -10000000.0;
+  float minX = 100000000.0f, maxX = -100000000.0f, minY = 10000000.0f, maxY = -10000000.0f;
 
   JSONObject gameJSON = loadJSONObject("same.json");
 
@@ -55,15 +55,15 @@ void setup(){
   lengthX = maxX - minX;
   lengthY = maxY - minY;
 
-  float scaleX = (width * 0.9) / lengthX, scaleY = (height * 0.9) / lengthY;
+  float scaleX = (width * 0.9f) / lengthX, scaleY = (height * 0.9f) / lengthY;
   
   for(int i = 0; i < siteArray.size(); i++){
     sites[i].posX *= scaleX;
     sites[i].posY *= scaleY;
   }
   
-  centerX = (width / 2) - (minX + maxX) * scaleX / 2;
-  centerY = (height / 2) - (minY + maxY) * scaleY / 2;
+  centerX = (width / 2.0f) - (minX + maxX) * scaleX / 2.0f;
+  centerY = (height / 2.0f) - (minY + maxY) * scaleY / 2.0f;
   
   rivers = new int[riverArray.size()][];
   for(int i = 0; i < riverArray.size(); i++){
@@ -101,7 +101,7 @@ void setup(){
   }
   
   v = new Visualizer(playerNum, sites, rivers, moves, evals);
-  box = new StatusOnMouse(playerNum, 16, 5.0, 5.0, v);
+  box = new StatusOnMouse(playerNum, 16, 5.0f, 5.0f, v);
 }
 
 void keyPressed(){
@@ -116,11 +116,11 @@ void keyPressed(){
       v.moveBackward();
     }
   } else if(key == '['){
-    globalScale *= 1.1;
+    globalScale *= 1.1f;
   } else if(key == ']'){
-    globalScale /= 1.1;
+    globalScale /= 1.1f;
   } else if(key == 'r'){
-    globalScale = 1.0;
+    globalScale = 1.0f;
   }
 }
 
@@ -154,7 +154,7 @@ void draw(){
   translate(centerX + draggedX, centerY + draggedY);
   v.drawMap();
   translate(-centerX - draggedX, -centerY - draggedY);
-  scale(1.0 / globalScale);
+  scale(1.0f / globalScale);
 
   if(showBox){
     box.drawStatusBox();
