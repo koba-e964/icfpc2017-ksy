@@ -1,14 +1,14 @@
 Visualizer v;
 StatusOnMouse box;
-float centerX = 0.0, centerY = 0.0;
+float centerX = 0.0f, centerY = 0.0f;
 float lengthX, lengthY;
-float globalScale = 1.0;
+float globalScale = 1.0f;
 
 ColorPallet bgColor;
 
 //mouse control
-float prevX = 0.0, prevY = 0.0;
-float draggedX = 0.0, draggedY = 0.0;
+float prevX = 0.0f, prevY = 0.0f;
+float draggedX = 0.0f, draggedY = 0.0f;
 boolean isReleased = true;
 boolean showBox = true;
 
@@ -17,6 +17,7 @@ void setup(){
   size(1280, 720);
   
   bgColor = new ColorPallet();
+  JSONLoader loader = new JSONLoader("same.json");
 
   Site[] sites;
   int[][] rivers;
@@ -24,84 +25,34 @@ void setup(){
   int[][] evals;
   int playerNum;
   
-  float minX = 100000000.0, maxX = -100000000.0, minY = 10000000.0, maxY = -10000000.0;
+  playerNum = loader.playerNumber();
+  
+  sites = loader.loadSites();
+  
+  lengthX = loader.maxX - loader.minX;
+  lengthY = loader.maxY - loader.minY;
 
-  JSONObject gameJSON = loadJSONObject("same.json");
-
-  JSONObject mapJSON = gameJSON.getJSONObject("map");
-  JSONArray moveJSON = gameJSON.getJSONArray("moves");
-  JSONArray evalJSON = gameJSON.getJSONArray("evals");
-  playerNum = gameJSON.getInt("punters");
+  float scaleX = (width * 0.9f) / lengthX, scaleY = (height * 0.9f) / lengthY;
   
-  JSONArray siteArray = mapJSON.getJSONArray("sites");
-  JSONArray riverArray = mapJSON.getJSONArray("rivers");
-  JSONArray mineArray = mapJSON.getJSONArray("mines");
-  
-  sites = new Site[siteArray.size()];
-  for(int i = 0; i < siteArray.size(); i++){
-    JSONObject siteJSON = siteArray.getJSONObject(i);
-    int id = siteJSON.getInt("id");
-    float x = siteJSON.getFloat("x");
-    float y = siteJSON.getFloat("y");
-    sites[i] = new Site(id, false, x, y);
-    
-    // calc. boundary of the map
-    minX = min(minX, x);
-    maxX = max(maxX, x);
-    minY = min(minY, y);
-    maxY = max(maxY, y);
-  }
-  
-  lengthX = maxX - minX;
-  lengthY = maxY - minY;
-
-  float scaleX = (width * 0.9) / lengthX, scaleY = (height * 0.9) / lengthY;
-  
-  for(int i = 0; i < siteArray.size(); i++){
+  for(int i = 0; i < sites.length; i++){
     sites[i].posX *= scaleX;
     sites[i].posY *= scaleY;
   }
   
-  centerX = (width / 2) - (minX + maxX) * scaleX / 2;
-  centerY = (height / 2) - (minY + maxY) * scaleY / 2;
+  centerX = (width / 2.0f) - (loader.minX + loader.maxX) * scaleX / 2.0f;
+  centerY = (height / 2.0f) - (loader.minY + loader.maxY) * scaleY / 2.0f;
   
-  rivers = new int[riverArray.size()][];
-  for(int i = 0; i < riverArray.size(); i++){
-    JSONObject riverJSON = riverArray.getJSONObject(i);
-    int source = riverJSON.getInt("source");
-    int target = riverJSON.getInt("target");
-    rivers[i] = new int[]{source, target, -1};
-  }
+  rivers = loader.loadRivers();
   
-  for(int n: mineArray.getIntArray()){
+  for(int n: loader.loadMineArray()){
     sites[n].setMine();
   }
   
-  moves = new int[moveJSON.size()][];
-  for(int i = 0; i < moveJSON.size(); i++){
-    if(moveJSON.getJSONObject(i).hasKey("pass")){
-      moves[i] = new int[]{-1,-1,-1};
-    } else {
-      JSONObject claim = moveJSON.getJSONObject(i).getJSONObject("claim");
-      int id, source, target;
-      id = claim.getInt("punter");
-      source = claim.getInt("source");
-      target = claim.getInt("target");
-      moves[i] = new int[]{id, source, target};
-    }
-  }
-  
-  evals = new int[evalJSON.size()][];
-  for(int i = 0; i < evalJSON.size(); i++){
-    JSONObject eval = evalJSON.getJSONObject(i);
-    int id, score;
-    id = eval.getInt("punter");
-    score = eval.getInt("eval");
-    evals[i] = new int[]{id, score};
-  }
+  moves = loader.loadMoves();
+  evals = loader.loadEvals();
   
   v = new Visualizer(playerNum, sites, rivers, moves, evals);
-  box = new StatusOnMouse(playerNum, 16, 5.0, 5.0, v);
+  box = new StatusOnMouse(playerNum, 16, 5.0f, 5.0f, v);
 }
 
 void keyPressed(){
@@ -116,11 +67,11 @@ void keyPressed(){
       v.moveBackward();
     }
   } else if(key == '['){
-    globalScale *= 1.1;
+    globalScale *= 1.1f;
   } else if(key == ']'){
-    globalScale /= 1.1;
+    globalScale /= 1.1f;
   } else if(key == 'r'){
-    globalScale = 1.0;
+    globalScale = 1.0f;
   }
 }
 
@@ -154,7 +105,7 @@ void draw(){
   translate(centerX + draggedX, centerY + draggedY);
   v.drawMap();
   translate(-centerX - draggedX, -centerY - draggedY);
-  scale(1.0 / globalScale);
+  scale(1.0f / globalScale);
 
   if(showBox){
     box.drawStatusBox();

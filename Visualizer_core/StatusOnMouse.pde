@@ -5,8 +5,8 @@ public class StatusOnMouse {
   int playerNum;
   int maxTextLength = 6;
   Visualizer v;
-  float dx = 10.0;
-  float dy = 20.0;
+  float dx = 10.0f;
+  float dy = 20.0f;
   
   public StatusOnMouse(int playerNum, int tSize, float merginX, float merginY, Visualizer v){
     this.playerNum = playerNum;
@@ -26,8 +26,8 @@ public class StatusOnMouse {
   }
 
   public void drawStatusBox(){
-    float lengthX = this.tSize * (this.maxTextLength * 3.0 / 5.0) + this.merginX * 2;
-    float lengthY = this.tSize * (this.playerNum + 1) + this.merginY * 2;
+    float lengthX = this.tSize * (this.maxTextLength * 3.0f / 5.0f) + this.merginX * 2.0f;
+    float lengthY = this.tSize * (this.playerNum + 1) + this.merginY * 2.0f;
 
     this.maxTextLength = maxTextLength();
     fill(255);
@@ -38,10 +38,10 @@ public class StatusOnMouse {
     fill(0);
     textSize(this.tSize);
     textAlign(CENTER);
-    text("Turn:" + this.v.currentTurn(), mouseX+dx+lengthX/2, mouseY+dy+this.merginY+this.tSize);
+    text("Turn:" + this.v.currentTurn(), mouseX+dx+lengthX/2.0f, mouseY+dy+this.merginY+this.tSize);
     
     for(int i = 0; i < this.playerNum; i++){
-      text("" + i + ":" + this.v.evals[this.v.cur][i], mouseX+dx+lengthX/2, mouseY+dy+this.merginY+(i+1)*this.tSize+this.tSize);
+      text("" + i + ":" + this.v.evals[this.v.cur][i], mouseX+dx+lengthX/2.0f, mouseY+dy+this.merginY+(i+1)*this.tSize+this.tSize);
     }
   }
 }
