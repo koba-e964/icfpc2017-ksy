@@ -27,15 +27,15 @@ public class Map {
   
   public void drawRivers(int id){
     for(int i = 0; i < this.riverNum(); i++){
-      Site source = map[this.rivers[i][0]];
+      Site source = this.map[this.rivers[i][0]];
       if(rivers[i][2] >= 0){
         if(i == id){
-          source.drawPathToSiteBold(map[this.rivers[i][1]], rivers[i][2]);
+          source.drawPathToSiteBold(this.map[this.rivers[i][1]], rivers[i][2]);
         } else {
-          source.drawPathToSite(map[this.rivers[i][1]], rivers[i][2]);
+          source.drawPathToSite(this.map[this.rivers[i][1]], rivers[i][2]);
         }
       } else {
-        source.drawPathToSite(map[this.rivers[i][1]]);
+        source.drawPathToSite(this.map[this.rivers[i][1]]);
       }
     }
   }
